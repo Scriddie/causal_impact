@@ -1,0 +1,8 @@
+### Standard Diff in Diff
+y - (b0 + b1 * time + b2 * control) =  + |b3 * time * control|
+                                             E F F E C T
+
+### Our Paper
+y1 = (~ old_model)
+y2 = actual_outcome
+y - (~ old_model) = effect
