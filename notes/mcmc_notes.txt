@@ -1,0 +1,7 @@
+1) We'd like to estimate some model param using Bayes' formula
+2) We're missing a part of the equation, namely P(X), bc we dont have data for all possible outcome values
+3) We'd like to sample from that distribution to estimate P(X), but we can't just do so even though we have an idea of the distribution bc we're lacking the normalizing constant
+3) From the outcome values we have, we construct some sort of stationary distribution "s"
+4) Using this stationary distribution and some bogus Markov Chain combined with the "acceptance" rule, we can sample our posterior  quasi-iid by traversing the Markov Chain for a long time (-> Monte Carlo Sampling)
+
+https://www.youtube.com/watch?v=U561HGMWjcw

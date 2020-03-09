@@ -1,0 +1,20 @@
+Bibliography
+Randomized Controlled Trial of Breakfast Recommendations on Weight: A
+Multi-Site Effectiveness Trial
+
+This bibliography includes published and unpublished works that are related 
+to ICPSR study 36174. It includes works that are based on primary
+or secondary analysis of the data, or which describe or critique those
+data or the collection methodology. 
+
+If you publish a work or know of other works that are based on these data,
+please send the complete citation and name of the ICPSR study used to:
+icpsr-biblio-notify@umich.edu 
+
+
+1. Dhurandhar, Emily J.; Dawson, John; Alcorn, Amy; Larsen, Lesli H.;
+Thomas, Elizabeth A.; Cardel, Michelle; Bourland, Ashley C.; Astrup, Arne;
+St-Onge, Marie-Pierre; Hill, James O.; Apovian, Caroline M.; Shikany, James
+M.; Allison, David B., "The effectiveness of breakfast recommendations on
+weight loss: A randomized controlled trial." American Journal of Clinical
+Nutrition. Aug 2014, 100, (2), 507 - 513. DOI: 10.3945/ajcn.114.089573

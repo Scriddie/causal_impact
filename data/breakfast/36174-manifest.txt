@@ -1,0 +1,52 @@
+File Manifest for ICPSR 36174
+
+Allison, David B. Randomized Controlled Trial of Breakfast Recommendations
+on Weight: A Multi-Site Effectiveness Trial. ICPSR36174-v1. Ann Arbor, MI:
+Inter-university Consortium for Political and Social Research
+[distributor], 2015-08-07. http://doi.org/10.3886/ICPSR36174.v1
+
+
+Study-level Documentation
+
+    Filename                            Record  Record    Var.    Date        MD5
+                                        Length  Count     Count   Updated     Checksum
+
+    36174-descriptioncitation.pdf       -       -         -       2016-02-09  -
+
+    36174-related_literature.txt        -       -         -       daily       -
+
+    36174-manifest.txt                  -       -         -       daily       -
+
+
+DS0001 Randomized Controlled Trial of Breakfast Recommendations on Weight:
+A Multi-Site Effectiveness Trial
+
+    Filename                            Record  Record    Var.    Date        MD5
+                                        Length  Count     Count   Updated     Checksum
+
+    36174-0001-Codebook.pdf             -       -         -       2015-08-07  1f3d3330f4b0d415d060c9489ee6bdea
+
+    36174-0001-Data.dta                 -       255       42      2015-08-07  4bc4c6e63646c164bb6d721993ff7bf9
+
+    36174-0001-Data.rda                 -       255       42      2015-08-07  23b37e83e9659d7fa6ca88ae575121fc
+
+    36174-0001-Data.sav                 -       255       42      2015-08-07  47144b3b46a791cc497595dac4289abf
+
+    36174-0001-Data.stc                 -       255       42      2015-08-07  0c41f4678e02278639514c60ffb837a9
+
+    36174-0001-Data.tsv                 -       255       42      2015-08-07  fa57559028be27f70eeee6b8c932d136
+
+    36174-0001-Data.txt                 185     255       42      2015-08-07  9bcd8ac401a6d208f828d2bc4e776f82
+
+    36174-0001-Setup.dct                -       -         -       2015-08-07  9c9263921ae239db7160e9c9250e72b5
+
+    36174-0001-Setup.do                 -       -         -       2015-08-07  e726e43417da325e900644269b2c8d98
+
+    36174-0001-Setup.sas                -       -         -       2015-08-07  abff3ec6689d70e61aca1084d966d641
+
+    36174-0001-Setup.sps                -       -         -       2015-08-07  d3a3d5ed56e8df4ab68430c788d78499
+
+    36174-0001-Supplemental_syntax.do   -       -         -       2015-08-07  cb2ef9b0e22107c9901f3e7947f8454f
+
+    36174-0001-Supplemental_syntax.sas  -       -         -       2015-08-07  1363ec833d082c8f9df64f8061d855d5
+
