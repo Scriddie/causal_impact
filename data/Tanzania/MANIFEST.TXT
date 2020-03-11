@@ -1,0 +1,89 @@
+programs/1 - 3ie_prepare_baseline_datasets_deidentified (final).do (application/x-stata-syntax) 11436 bytes.
+programs/2 - 3ie_append_endline_batches_deidentified (final).do (application/x-stata-syntax) 4559 bytes.
+programs/3 - 3ie_prepare_existing_pts_deidentified (final).do (application/x-stata-syntax) 32085 bytes.
+data/baseline/3ie_base_pt.dta (application/x-stata) 204677 bytes.
+data/baseline/3ie_base_visit.dta (application/x-stata) 4697332 bytes.
+data/existing pts/3ie_exist_PDC.dta (application/x-stata) 10302435 bytes.
+data/existing pts/3ie_exist_pts.dta (application/x-stata) 370787 bytes.
+data/existing pts/3ie_exist_vis.dta (application/x-stata) 13855732 bytes.
+data/baseline/3ie_fac.dta (application/x-stata) 1457 bytes.
+data/existing pts/3ie_ITS_analysis_all.dta (application/x-stata) 46058 bytes.
+data/existing pts/3ie_ITS_analysis_contin.dta (application/x-stata) 46058 bytes.
+data/new pts/3ie_new_PDC.dta (application/x-stata) 1175715 bytes.
+data/new pts/3ie_new_pts.dta (application/x-stata) 128055 bytes.
+data/new pts/3ie_new_vis.dta (application/x-stata) 1263900 bytes.
+data/baseline/3ie_prepare_baseline_datasets.log (text/plain; charset=US-ASCII) 24438 bytes.
+data/existing pts/3ie_prepare_existing_pts.log (text/plain; charset=US-ASCII) 57545 bytes.
+data/new pts/3ie_prepare_new_pts.log (text/plain; charset=US-ASCII) 42733 bytes.
+programs/4 - 3ie_prepare_new_pts_deidentified (final).do (application/x-stata-syntax) 23652 bytes.
+programs/5 - Create table 1&2 deidentified (final).do (application/x-stata-syntax) 16629 bytes.
+programs/6 - ITS analysis existing patients deidentified (final).do (application/x-stata-syntax) 40537 bytes.
+programs/7 - GEE analysis existing patients deidentified (final).do (application/x-stata-syntax) 25858 bytes.
+programs/8 - Survival analysis new patients deidentified (final).do (application/x-stata-syntax) 7593 bytes.
+data/endline/all_endline_delivery.dta (application/x-stata) 103523 bytes.
+data/endline/all_endline_pts.dta (application/x-stata) 1420090 bytes.
+data/endline/all_endline_visits.dta (application/x-stata) 518828 bytes.
+data/endline/append two to one.log (text/plain; charset=US-ASCII) 21377 bytes.
+analysis/Cox_miss_models_pre_post.rtf (application/rtf) 13862 bytes.
+data/endline/batch1/endline-patient-batch1 deidentified.xlsx (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet) 99626 bytes.
+data/endline/batch2/endline-patient-batch2 deidentified.xlsx (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet) 280581 bytes.
+data/endline/batch1/endline-patient-delivery-batch1 deidentified.xlsx (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet) 65861 bytes.
+data/endline/batch1/endline-patient-visit-batch1 deidentified.xlsx (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet) 290279 bytes.
+data/endline/batch2/endline-patient-visit-batch2 deidentified.xlsx (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet) 837598 bytes.
+data/baseline/Facility_Records-baseline deidentified.xlsx (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet) 12997 bytes.
+analysis/GEE_all_BL_predictors.rtf (application/rtf) 28487 bytes.
+analysis/GEE_all_facil1.rtf (application/rtf) 9167 bytes.
+analysis/GEE_all_facil2.rtf (application/rtf) 9240 bytes.
+analysis/GEE_all_facil3.rtf (application/rtf) 9198 bytes.
+analysis/GEE_all_facil4.rtf (application/rtf) 9132 bytes.
+analysis/GEE_all_miss_model6.rtf (application/rtf) 24050 bytes.
+analysis/GEE_all_PDC_model6_avgPDC.rtf (application/rtf) 10085 bytes.
+analysis/GEE_all_PDC_model6_pctPDC.rtf (application/rtf) 13378 bytes.
+analysis/GEE_analysis_existing_all.log (text/plain; charset=US-ASCII) 177856 bytes.
+analysis/GEE_analysis_existing_contin.log (text/plain; charset=US-ASCII) 44357 bytes.
+analysis/GEE_baseline_existing.log (text/plain; charset=US-ASCII) 19685 bytes.
+analysis/GEE_contin_miss_model6.rtf (application/rtf) 23977 bytes.
+analysis/GEE_contin_PDC_model6_avgPDC.rtf (application/rtf) 10078 bytes.
+analysis/GEE_contin_PDC_model6_pctPDC.rtf (application/rtf) 13355 bytes.
+analysis/ITS_age_gt30.gph (text/plain; charset=US-ASCII) 9745 bytes.
+analysis/ITS_all_full_model_diffs.rtf (application/rtf) 5977 bytes.
+analysis/ITS_all_full_model_interven.rtf (application/rtf) 5919 bytes.
+analysis/ITS_analysis_existing_all.log (text/plain; charset=US-ASCII) 47733 bytes.
+analysis/ITS_analysis_existing_contin.log (text/plain; charset=US-ASCII) 48712 bytes.
+analysis/ITS_avgPDC_all.gph (text/plain; charset=US-ASCII) 11680 bytes.
+analysis/ITS_avgPDC_contin.gph (text/plain; charset=US-ASCII) 11715 bytes.
+analysis/ITS_confounder_TS_existing.log (text/plain; charset=US-ASCII) 6124 bytes.
+analysis/ITS_contin_full_model_diffs.rtf (application/rtf) 5996 bytes.
+analysis/ITS_contin_full_model_interven.rtf (application/rtf) 5943 bytes.
+analysis/ITS_married.gph (text/plain; charset=US-ASCII) 9729 bytes.
+analysis/ITS_missed15_all.gph (text/plain; charset=US-ASCII) 11671 bytes.
+analysis/ITS_missed15_contin.gph (text/plain; charset=US-ASCII) 11702 bytes.
+analysis/ITS_missed3_all.gph (text/plain; charset=US-ASCII) 11653 bytes.
+analysis/ITS_missed3_contin.gph (text/plain; charset=US-ASCII) 11686 bytes.
+analysis/ITS_missed60_all.gph (text/plain; charset=US-ASCII) 11664 bytes.
+analysis/ITS_missed60_contin.gph (text/plain; charset=US-ASCII) 11706 bytes.
+analysis/ITS_missed7_all.gph (text/plain; charset=US-ASCII) 11656 bytes.
+analysis/ITS_missed7_contin.gph (text/plain; charset=US-ASCII) 11689 bytes.
+analysis/ITS_missed_all.gph (text/plain; charset=US-ASCII) 11612 bytes.
+analysis/ITS_missed_contin.gph (text/plain; charset=US-ASCII) 11653 bytes.
+analysis/ITS_PDC80_all.gph (text/plain; charset=US-ASCII) 11652 bytes.
+analysis/ITS_PDC80_contin.gph (text/plain; charset=US-ASCII) 11681 bytes.
+analysis/ITS_PDC95_all.gph (text/plain; charset=US-ASCII) 11651 bytes.
+analysis/ITS_PDC95_contin.gph (text/plain; charset=US-ASCII) 11685 bytes.
+analysis/ITS_post_deliv.gph (text/plain; charset=US-ASCII) 9794 bytes.
+analysis/ITS_who_gt1.gph (text/plain; charset=US-ASCII) 9783 bytes.
+analysis/new_post_bygroup_15day.gph (text/plain; charset=US-ASCII) 10611 bytes.
+analysis/new_post_bygroup_1day.gph (text/plain; charset=US-ASCII) 10455 bytes.
+analysis/new_post_bygroup_3day.gph (text/plain; charset=US-ASCII) 10655 bytes.
+analysis/new_post_bygroup_60day.gph (text/plain; charset=US-ASCII) 10324 bytes.
+analysis/new_post_bygroup_7day.gph (text/plain; charset=US-ASCII) 10655 bytes.
+analysis/new_pre_bygroup_15day.gph (text/plain; charset=US-ASCII) 9711 bytes.
+analysis/new_pre_bygroup_1day.gph (text/plain; charset=US-ASCII) 9733 bytes.
+analysis/new_pre_bygroup_3day.gph (text/plain; charset=US-ASCII) 9778 bytes.
+analysis/new_pre_bygroup_60day.gph (text/plain; charset=US-ASCII) 9256 bytes.
+analysis/new_pre_bygroup_7day.gph (text/plain; charset=US-ASCII) 9683 bytes.
+data/baseline/Patient Data Profile-baseline deidentified.xlsx (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet) 416681 bytes.
+data/baseline/Patient Visit-baseline deidentified.xlsx (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet) 5478848 bytes.
+analysis/Survival_new_pts.log (text/plain; charset=US-ASCII) 48211 bytes.
+analysis/Table1_existing_pts.log (text/plain; charset=US-ASCII) 79252 bytes.
+analysis/Table2_new_pts.log (text/plain; charset=US-ASCII) 26262 bytes.

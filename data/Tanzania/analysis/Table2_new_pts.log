@@ -1,0 +1,683 @@
+-----------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  c:\3ie\analysis\Table2_new_pts.log
+  log type:  text
+ opened on:  16 Sep 2016, 17:18:43
+
+. use "new pts\3ie_new_pts.dta", clear
+
+. count
+  673
+
+. *n=673
+. 
+. * limit new patients: 
+. * pre start before July 01, 2015 with follow-up ending July 31 2015
+. * post start after Aug 1, 2015
+. 
+. tabulate pre_post group, missing
+
+   Patient |
+   started |
+before/aft |
+        er |
+interventi |         Group
+        on |   Control  Intervent |     Total
+-----------+----------------------+----------
+       Pre |       108        120 |       228 
+      Post |       181        204 |       385 
+         . |        31         29 |        60 
+-----------+----------------------+----------
+     Total |       320        353 |       673 
+
+
+. tabulate age_cat group if pre_post==0, missing chi2 nofreq col
+
+       Age |         Group
+  category |   Control  Intervent |     Total
+-----------+----------------------+----------
+     <20yo |     14.81      14.17 |     14.47 
+   21-30yo |     55.56      53.33 |     54.39 
+   31-40yo |     28.70      31.67 |     30.26 
+     >40yo |      0.93       0.83 |      0.88 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(3) =   0.2386   Pr = 0.971
+
+. tabulate marstat group if pre_post==0, missing chi2 nofreq col
+
+      Marital |         Group
+       status |   Control  Intervent |     Total
+--------------+----------------------+----------
+       single |      7.41       8.33 |      7.89 
+married/cohab |     78.70      76.67 |     77.63 
+  divor/widow |      2.78      15.00 |      9.21 
+            . |     11.11       0.00 |      5.26 
+--------------+----------------------+----------
+        Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(3) =  22.6445   Pr = 0.000
+
+. tabulate who_stage group if pre_post==0, missing chi2 nofreq col
+
+ WHO stage |
+      when |
+   started |         Group
+       ART |   Control  Intervent |     Total
+-----------+----------------------+----------
+         1 |     80.56      85.83 |     83.33 
+         2 |      7.41       8.33 |      7.89 
+         3 |     12.04       5.83 |      8.77 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(2) =   2.7456   Pr = 0.253
+
+. tabulate c_art_year group if pre_post==0, missing chi2 nofreq col
+
+   year of |
+ art start |
+    (first |         Group
+    visit) |   Control  Intervent |     Total
+-----------+----------------------+----------
+      2014 |     78.70      73.33 |     75.88 
+      2015 |     21.30      26.67 |     24.12 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(1) =   0.8957   Pr = 0.344
+
+. tabulate delivery_year group if pre_post==0, missing chi2 nofreq col
+
+   Year of |         Group
+  delivery |   Control  Intervent |     Total
+-----------+----------------------+----------
+      2014 |     27.78      17.50 |     22.37 
+      2015 |     60.19      67.50 |     64.04 
+      2016 |     12.04       8.33 |     10.09 
+         . |      0.00       6.67 |      3.51 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(3) =  11.1322   Pr = 0.011
+
+. tabulate first_month group if pre_post==0, missing chi2 nofreq col
+
+first_mont |         Group
+         h |   Control  Intervent |     Total
+-----------+----------------------+----------
+    2014m7 |      0.93       0.83 |      0.88 
+    2014m8 |     13.89      17.50 |     15.79 
+    2014m9 |     11.11      13.33 |     12.28 
+   2014m10 |     16.67      15.00 |     15.79 
+   2014m11 |     18.52      15.00 |     16.67 
+   2014m12 |     17.59      11.67 |     14.47 
+    2015m1 |     15.74      16.67 |     16.23 
+    2015m2 |      3.70       5.00 |      4.39 
+    2015m3 |      0.93       2.50 |      1.75 
+    2015m4 |      0.00       1.67 |      0.88 
+    2015m6 |      0.93       0.83 |      0.88 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+         Pearson chi2(10) =   5.4611   Pr = 0.858
+
+. 
+. tabulate age_cat group if pre_post==1, missing chi2 nofreq col
+
+       Age |         Group
+  category |   Control  Intervent |     Total
+-----------+----------------------+----------
+     <20yo |     12.71       9.80 |     11.17 
+   21-30yo |     62.98      64.22 |     63.64 
+   31-40yo |     23.20      25.98 |     24.68 
+     >40yo |      1.10       0.00 |      0.52 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(3) =   3.3003   Pr = 0.348
+
+. tabulate marstat group if pre_post==1, missing chi2 nofreq col
+
+      Marital |         Group
+       status |   Control  Intervent |     Total
+--------------+----------------------+----------
+       single |     10.50       8.82 |      9.61 
+married/cohab |     77.90      75.00 |     76.36 
+  divor/widow |      4.42      14.22 |      9.61 
+            . |      7.18       1.96 |      4.42 
+--------------+----------------------+----------
+        Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(3) =  15.8831   Pr = 0.001
+
+. tabulate who_stage group if pre_post==1, missing chi2 nofreq col
+
+ WHO stage |
+      when |
+   started |         Group
+       ART |   Control  Intervent |     Total
+-----------+----------------------+----------
+         1 |     81.77      86.76 |     84.42 
+         2 |     12.71      10.29 |     11.43 
+         3 |      4.97       2.45 |      3.64 
+         4 |      0.55       0.49 |      0.52 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(3) =   2.4562   Pr = 0.483
+
+. tabulate c_art_year group if pre_post==1, missing chi2 nofreq col
+
+   year of |
+ art start |
+    (first |         Group
+    visit) |   Control  Intervent |     Total
+-----------+----------------------+----------
+      2015 |     93.92      90.20 |     91.95 
+      2016 |      6.08       9.80 |      8.05 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(1) =   1.7990   Pr = 0.180
+
+. tabulate delivery_year group if pre_post==1, missing chi2 nofreq col
+
+   Year of |         Group
+  delivery |   Control  Intervent |     Total
+-----------+----------------------+----------
+      2013 |      0.00       0.49 |      0.26 
+      2014 |      2.21       0.00 |      1.04 
+      2015 |     33.70      38.73 |     36.36 
+      2016 |     62.43      57.84 |     60.00 
+         . |      1.66       2.94 |      2.34 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(4) =   7.0737   Pr = 0.132
+
+. tabulate first_month group if pre_post==1, missing chi2 nofreq col
+
+first_mont |         Group
+         h |   Control  Intervent |     Total
+-----------+----------------------+----------
+    2015m8 |     14.92      14.71 |     14.81 
+    2015m9 |     18.78      17.16 |     17.92 
+   2015m10 |     18.23      18.63 |     18.44 
+   2015m11 |     18.78      21.08 |     20.00 
+   2015m12 |     23.20      18.63 |     20.78 
+    2016m1 |      3.31       4.41 |      3.90 
+    2016m2 |      2.76       4.90 |      3.90 
+    2016m3 |      0.00       0.49 |      0.26 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(7) =   3.6822   Pr = 0.816
+
+. 
+. *********************************************************************************************** 
+. * TABLE 1 VISITS FOR ALL NEW PATIENTS
+. *********************************************************************************************** 
+. use "new pts\3ie_new_vis.dta", clear
+
+. 
+. tabulate first_month pre_post, missing
+
+           |   Patient started before/after
+first_mont |           intervention
+         h |       Pre       Post          . |     Total
+-----------+---------------------------------+----------
+    2014m7 |         6          0          0 |         6 
+    2014m8 |       207          0          0 |       207 
+    2014m9 |       188          0          0 |       188 
+   2014m10 |       201          0          0 |       201 
+   2014m11 |       242          0          0 |       242 
+   2014m12 |       202          0          0 |       202 
+    2015m1 |       226          0          0 |       226 
+    2015m2 |        48          0          0 |        48 
+    2015m3 |        32          0          0 |        32 
+    2015m4 |        13          0          0 |        13 
+    2015m6 |        10          0          0 |        10 
+    2015m7 |         0          0        357 |       357 
+    2015m8 |         0        317          0 |       317 
+    2015m9 |         0        400          0 |       400 
+   2015m10 |         0        385          0 |       385 
+   2015m11 |         0        357          0 |       357 
+   2015m12 |         0        322          0 |       322 
+    2016m1 |         0         50          0 |        50 
+    2016m2 |         0         37          0 |        37 
+    2016m3 |         0          2          0 |         2 
+-----------+---------------------------------+----------
+     Total |     1,375      1,870        357 |     3,602 
+
+
+. /*
+>            |   Patient started before/after
+> first_mont |           intervention
+>          h |       Pre       Post          . |     Total
+> -----------+---------------------------------+----------
+>     2014m7 |         6          0          0 |         6 
+>     2014m8 |       207          0          0 |       207 
+>     2014m9 |       188          0          0 |       188 
+>    2014m10 |       201          0          0 |       201 
+>    2014m11 |       242          0          0 |       242 
+>    2014m12 |       202          0          0 |       202 
+>     2015m1 |       226          0          0 |       226 
+>     2015m2 |        48          0          0 |        48 
+>     2015m3 |        32          0          0 |        32 
+>     2015m4 |        13          0          0 |        13 
+>     2015m6 |        10          0          0 |        10 
+>     2015m7 |         0          0        357 |       357 
+>     2015m8 |         0        317          0 |       317 
+>     2015m9 |         0        400          0 |       400 
+>    2015m10 |         0        385          0 |       385 
+>    2015m11 |         0        357          0 |       357 
+>    2015m12 |         0        322          0 |       322 
+>     2016m1 |         0         50          0 |        50 
+>     2016m2 |         0         37          0 |        37 
+>     2016m3 |         0          2          0 |         2 
+> -----------+---------------------------------+----------
+>      Total |     1,375      1,870        357 |     3,602 
+> */
+. 
+. tabulate fac_id post_its, missing
+
+           | Month is before/after 01Sep2015
+  Facility |         for ITS analyses
+      Code |         0          1          . |     Total
+-----------+---------------------------------+----------
+         1 |       159        123          1 |       283 
+         2 |       153        118          7 |       278 
+         3 |        51        136          4 |       191 
+         4 |        30         29          4 |        63 
+         5 |       140        136          7 |       283 
+         6 |        38         62          2 |       102 
+         7 |        65        146          4 |       215 
+         8 |        15         60          6 |        81 
+         9 |        25         97         14 |       136 
+        10 |        26         55          8 |        89 
+        11 |         0         32          4 |        36 
+        12 |        36         81          7 |       124 
+        13 |        96        142         11 |       249 
+        14 |        91        130          2 |       223 
+        15 |        62         15          0 |        77 
+        16 |        73        112          2 |       187 
+        17 |        53        117          4 |       174 
+        18 |         7         17          1 |        25 
+        19 |        25         74          0 |        99 
+        20 |        21         57          1 |        79 
+        21 |        28        142          4 |       174 
+        22 |        89         36          1 |       126 
+        23 |        31         26          2 |        59 
+        24 |        91        148         10 |       249 
+-----------+---------------------------------+----------
+     Total |     1,405      2,091        106 |     3,602 
+
+
+. 
+. tabulate pre_post group, missing
+
+   Patient |
+   started |
+before/aft |
+        er |
+interventi |         Group
+        on |   Control  Intervent |     Total
+-----------+----------------------+----------
+       Pre |       643        732 |     1,375 
+      Post |       884        986 |     1,870 
+         . |       194        163 |       357 
+-----------+----------------------+----------
+     Total |     1,721      1,881 |     3,602 
+
+
+. tabulate num_vis group if pre_post==0, missing chi2 nofreq col
+
+     Total |
+ number of |         Group
+    visits |   Control  Intervent |     Total
+-----------+----------------------+----------
+         1 |      0.16       0.55 |      0.36 
+         2 |      1.24       0.55 |      0.87 
+         3 |      3.73       1.64 |      2.62 
+         4 |      4.35       3.83 |      4.07 
+         5 |      9.33      10.25 |      9.82 
+         6 |     43.86      42.62 |     43.20 
+         7 |     27.22      28.69 |     28.00 
+         8 |      0.00       1.09 |      0.58 
+        12 |      0.00       1.64 |      0.87 
+        14 |      2.18       3.83 |      3.05 
+        16 |      2.49       0.00 |      1.16 
+        17 |      2.64       0.00 |      1.24 
+        18 |      2.80       0.00 |      1.31 
+        19 |      0.00       2.60 |      1.38 
+        20 |      0.00       2.73 |      1.45 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+         Pearson chi2(14) = 122.9179   Pr = 0.000
+
+. tabulate post_delivery group if pre_post==0, missing chi2 nofreq col
+
+  Visit is |
+before/aft |
+        er |         Group
+  delivery |   Control  Intervent |     Total
+-----------+----------------------+----------
+         0 |     56.30      59.84 |     58.18 
+         1 |     43.70      40.16 |     41.82 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(1) =   1.7606   Pr = 0.185
+
+. tabulate miss group if pre_post==0, missing chi2 nofreq col
+
+     delay |
+   between |
+   cleaned |
+ scheduled |
+  and next |         Group
+    visits |   Control  Intervent |     Total
+-----------+----------------------+----------
+         0 |     50.86      56.01 |     53.60 
+         1 |     32.35      27.60 |     29.82 
+         . |     16.80      16.39 |     16.58 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(2) =   4.3241   Pr = 0.115
+
+. tabulate miss3 group if pre_post==0, missing chi2 nofreq col
+
+  delay of |
+       3+d |
+   between |
+   cleaned |
+ scheduled |
+  and next |         Group
+    visits |   Control  Intervent |     Total
+-----------+----------------------+----------
+         0 |     58.16      63.11 |     60.80 
+         1 |     25.04      20.49 |     22.62 
+         . |     16.80      16.39 |     16.58 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(2) =   4.5421   Pr = 0.103
+
+. tabulate miss7 group if pre_post==0, missing chi2 nofreq col
+
+  delay of |
+7+ between |
+   cleaned |
+ scheduled |
+  and next |         Group
+    visits |   Control  Intervent |     Total
+-----------+----------------------+----------
+         0 |     64.39      68.31 |     66.47 
+         1 |     18.82      15.30 |     16.95 
+         . |     16.80      16.39 |     16.58 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(2) =   3.3243   Pr = 0.190
+
+. tabulate miss15 group if pre_post==0, missing chi2 nofreq col
+
+  delay of |
+      15+d |
+   between |
+   cleaned |
+ scheduled |
+  and next |         Group
+   visitss |   Control  Intervent |     Total
+-----------+----------------------+----------
+         0 |     67.81      70.90 |     69.45 
+         1 |     15.40      12.70 |     13.96 
+         . |     16.80      16.39 |     16.58 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(2) =   2.2815   Pr = 0.320
+
+. tabulate miss60 group if pre_post==0, missing chi2 nofreq col
+
+  delay of |
+      60+d |
+   between |
+   cleaned |
+ scheduled |
+  and next |         Group
+    visits |   Control  Intervent |     Total
+-----------+----------------------+----------
+         0 |     77.29      79.37 |     78.40 
+         1 |      5.91       4.23 |      5.02 
+         . |     16.80      16.39 |     16.58 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(2) =   2.1354   Pr = 0.344
+
+. 
+. tabulate num_vis group if pre_post==1, missing chi2 nofreq col
+
+     Total |
+ number of |         Group
+    visits |   Control  Intervent |     Total
+-----------+----------------------+----------
+         1 |      0.68       0.71 |      0.70 
+         2 |      2.26       2.23 |      2.25 
+         3 |      6.79       6.39 |      6.58 
+         4 |     11.31      18.66 |     15.19 
+         5 |     22.62      21.81 |     22.19 
+         6 |     42.76      29.21 |     35.61 
+         7 |     12.67      16.33 |     14.60 
+         8 |      0.90       3.25 |      2.14 
+        14 |      0.00       1.42 |      0.75 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(8) =  69.6331   Pr = 0.000
+
+. tabulate post_delivery group if pre_post==1, missing chi2 nofreq col
+
+  Visit is |
+before/aft |
+        er |         Group
+  delivery |   Control  Intervent |     Total
+-----------+----------------------+----------
+         0 |     62.56      58.72 |     60.53 
+         1 |     37.44      41.28 |     39.47 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(1) =   2.8686   Pr = 0.090
+
+. tabulate miss group if pre_post==1, missing chi2 nofreq col
+
+     delay |
+   between |
+   cleaned |
+ scheduled |
+  and next |         Group
+    visits |   Control  Intervent |     Total
+-----------+----------------------+----------
+         0 |     54.52      59.94 |     57.38 
+         1 |     25.00      19.37 |     22.03 
+         . |     20.48      20.69 |     20.59 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(2) =   9.0946   Pr = 0.011
+
+. tabulate miss3 group if pre_post==1, missing chi2 nofreq col
+
+  delay of |
+       3+d |
+   between |
+   cleaned |
+ scheduled |
+  and next |         Group
+    visits |   Control  Intervent |     Total
+-----------+----------------------+----------
+         0 |     64.25      67.65 |     66.04 
+         1 |     15.27      11.66 |     13.37 
+         . |     20.48      20.69 |     20.59 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(2) =   5.3624   Pr = 0.068
+
+. tabulate miss7 group if pre_post==1, missing chi2 nofreq col
+
+  delay of |
+7+ between |
+   cleaned |
+ scheduled |
+  and next |         Group
+    visits |   Control  Intervent |     Total
+-----------+----------------------+----------
+         0 |     71.27      72.11 |     71.71 
+         1 |      8.26       7.20 |      7.70 
+         . |     20.48      20.69 |     20.59 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(2) =   0.7330   Pr = 0.693
+
+. tabulate miss15 group if pre_post==1, missing chi2 nofreq col
+
+  delay of |
+      15+d |
+   between |
+   cleaned |
+ scheduled |
+  and next |         Group
+   visitss |   Control  Intervent |     Total
+-----------+----------------------+----------
+         0 |     74.21      74.34 |     74.28 
+         1 |      5.32       4.97 |      5.13 
+         . |     20.48      20.69 |     20.59 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(2) =   0.1210   Pr = 0.941
+
+. tabulate miss60 group if pre_post==1, missing chi2 nofreq col
+
+  delay of |
+      60+d |
+   between |
+   cleaned |
+ scheduled |
+  and next |         Group
+    visits |   Control  Intervent |     Total
+-----------+----------------------+----------
+         0 |     78.39      78.09 |     78.24 
+         1 |      1.13       1.22 |      1.18 
+         . |     20.48      20.69 |     20.59 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(2) =   0.0450   Pr = 0.978
+
+. 
+. use "new pts\3ie_new_PDC.dta", clear
+
+. 
+. ttest PDC if pre_post==0, by(group)
+
+Two-sample t test with equal variances
+------------------------------------------------------------------------------
+   Group |     Obs        Mean    Std. Err.   Std. Dev.   [95% Conf. Interval]
+---------+--------------------------------------------------------------------
+ Control |     988    74.95871    1.203312    37.82307    72.59737    77.32006
+Interven |    1090    77.52425    1.085564    35.84006    75.39421    79.65428
+---------+--------------------------------------------------------------------
+combined |    2078    76.30445    .8074929    36.80963    74.72087    77.88803
+---------+--------------------------------------------------------------------
+    diff |           -2.565534    1.616344               -5.735358    .6042895
+------------------------------------------------------------------------------
+    diff = mean(Control) - mean(Interven)                         t =  -1.5872
+Ho: diff = 0                                     degrees of freedom =     2076
+
+    Ha: diff < 0                 Ha: diff != 0                 Ha: diff > 0
+ Pr(T < t) = 0.0563         Pr(|T| > |t|) = 0.1126          Pr(T > t) = 0.9437
+
+. tabulate PDCge80 group if pre_post==0, missing chi2 nofreq col
+
+           |         Group
+   PDCge80 |   Control  Intervent |     Total
+-----------+----------------------+----------
+       0.0 |     30.97      28.62 |     29.74 
+       1.0 |     69.03      71.38 |     70.26 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(1) =   1.3671   Pr = 0.242
+
+. tabulate PDCge95 group if pre_post==0, missing chi2 nofreq col
+
+           |         Group
+   PDCge95 |   Control  Intervent |     Total
+-----------+----------------------+----------
+       0.0 |     40.69      40.37 |     40.52 
+       1.0 |     59.31      59.63 |     59.48 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(1) =   0.0222   Pr = 0.882
+
+. 
+. ttest PDC if pre_post==1, by(group)
+
+Two-sample t test with equal variances
+------------------------------------------------------------------------------
+   Group |     Obs        Mean    Std. Err.   Std. Dev.   [95% Conf. Interval]
+---------+--------------------------------------------------------------------
+ Control |    1120    92.19745    .6123945    20.49464    90.99587    93.39902
+Interven |    1256    91.63062    .5920776    20.98328    90.46905    92.79219
+---------+--------------------------------------------------------------------
+combined |    2376    91.89781    .4257314    20.75195    91.06296    92.73265
+---------+--------------------------------------------------------------------
+    diff |            .5668292    .8529614               -1.105797    2.239456
+------------------------------------------------------------------------------
+    diff = mean(Control) - mean(Interven)                         t =   0.6645
+Ho: diff = 0                                     degrees of freedom =     2374
+
+    Ha: diff < 0                 Ha: diff != 0                 Ha: diff > 0
+ Pr(T < t) = 0.7468         Pr(|T| > |t|) = 0.5064          Pr(T > t) = 0.2532
+
+. tabulate PDCge80 group if pre_post==1, missing chi2 nofreq col
+
+           |         Group
+   PDCge80 |   Control  Intervent |     Total
+-----------+----------------------+----------
+       0.0 |      9.82      10.43 |     10.14 
+       1.0 |     90.18      89.57 |     89.86 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(1) =   0.2405   Pr = 0.624
+
+. tabulate PDCge95 group if pre_post==1, missing chi2 nofreq col
+
+           |         Group
+   PDCge95 |   Control  Intervent |     Total
+-----------+----------------------+----------
+       0.0 |     22.95      25.08 |     24.07 
+       1.0 |     77.05      74.92 |     75.93 
+-----------+----------------------+----------
+     Total |    100.00     100.00 |    100.00 
+
+          Pearson chi2(1) =   1.4739   Pr = 0.225
+
+. 
+. log close
+      name:  <unnamed>
+       log:  c:\3ie\analysis\Table2_new_pts.log
+  log type:  text
+ closed on:  16 Sep 2016, 17:18:43
+-----------------------------------------------------------------------------------------------------------------------------------------------

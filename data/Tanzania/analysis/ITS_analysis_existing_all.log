@@ -1,0 +1,1160 @@
+-----------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  c:\3ie\analysis\ITS_analysis_existing_all.log
+  log type:  text
+ opened on:  16 Sep 2016, 17:21:11
+
+. * log close
+. use "existing pts\3ie_exist_vis.dta", clear
+
+. 
+. * restrict sample
+. drop if out_of_range==1
+(808 observations deleted)
+
+. 
+. * create time series variables by facility
+. sort fac_id sched_mon
+
+. by fac_id sched_mon: egen miss_1 = mean(miss)
+
+. by fac_id sched_mon: egen miss_3 = mean(miss3)
+
+. by fac_id sched_mon: egen miss_7 = mean(miss7)
+
+. by fac_id sched_mon: egen miss_15 = mean(miss15)
+
+. by fac_id sched_mon: egen miss_60 = mean(miss60)
+
+. by fac_id sched_mon: keep if _n==1
+(46585 observations deleted)
+
+. gen group_no=fac_id+100
+
+. drop group
+
+. drop if out_of_range==1
+(0 observations deleted)
+
+. rename fac_label group
+
+. 
+. keep group group_no interv post_its post_its2 sched_mon sched_yr sched_mo post_its miss_1 miss_3 miss_7 miss_15 miss_60 out_of_range
+
+. order group group_no interv sched_mon sched_yr sched_mo post_its miss_1 miss_3 miss_7 miss_15 miss_60
+
+. save temp_ITS_byfacility.dta, replace
+(note: file temp_ITS_byfacility.dta not found)
+file temp_ITS_byfacility.dta saved
+
+. 
+. use "existing pts\3ie_exist_vis.dta", clear
+
+. 
+. * restrict sample
+. drop if out_of_range==1
+(808 observations deleted)
+
+. 
+. * create time series variables by group
+. sort group sched_mon
+
+. by group sched_mon: egen miss_1 = mean(miss)
+
+. by group sched_mon: egen miss_3 = mean(miss3)
+
+. by group sched_mon: egen miss_7 = mean(miss7)
+
+. by group sched_mon: egen miss_15 = mean(miss15)
+
+. by group sched_mon: egen miss_60 = mean(miss60)
+
+. by group sched_mon: keep if _n==1
+(47047 observations deleted)
+
+. gen group_no=0
+
+. replace group_no=1 if group=="Intervention"
+(21 real changes made)
+
+. order group group_no interv sched_mon sched_yr sched_mo post_its miss_1 miss_3 miss_7 miss_15 miss_60 out_of_range
+
+. 
+. keep group group_no interv post_its post_its2 sched_mon sched_yr sched_mo post_its miss_1 miss_3 miss_7 miss_15 miss_60 out_of_range
+
+. save temp_ITS_bygroup.dta, replace
+(note: file temp_ITS_bygroup.dta not found)
+file temp_ITS_bygroup.dta saved
+
+. 
+. gen diff_1 = miss_1-miss_1[_n-21] if _n>21
+(21 missing values generated)
+
+. gen diff_3 = miss_3-miss_3[_n-21] if _n>21
+(21 missing values generated)
+
+. gen diff_7 = miss_7-miss_7[_n-21] if _n>21
+(21 missing values generated)
+
+. gen diff_15 = miss_15-miss_15[_n-21] if _n>21
+(21 missing values generated)
+
+. gen diff_60 = miss_60-miss_60[_n-21] if _n>21
+(21 missing values generated)
+
+. drop if group=="Control"
+(21 observations deleted)
+
+. replace group="Diff"
+(21 real changes made)
+
+. replace group_no=2
+(21 real changes made)
+
+. replace interv=.
+(21 real changes made, 21 to missing)
+
+. drop miss_1 miss_3 miss_7 miss_15 miss_60
+
+. rename diff_1 miss_1
+
+. rename diff_3 miss_3
+
+. rename diff_7 miss_7
+
+. rename diff_15 miss_15
+
+. rename diff_60 miss_60
+
+. save temp_ITS_diff.dta, replace
+(note: file temp_ITS_diff.dta not found)
+file temp_ITS_diff.dta saved
+
+. 
+. use temp_ITS_bygroup.dta, clear
+
+. append using temp_ITS_diff.dta
+(label interv already defined)
+(label prepost already defined)
+
+. append using temp_ITS_byfacility.dta
+(label interv already defined)
+(label prepost already defined)
+
+. 
+. order group group_no interv sched_mon sched_yr sched_mo post_its post_its2 miss_1 miss_3 miss_7 miss_15 miss_60
+
+. keep group group_no interv sched_mon sched_yr sched_mo post_its post_its2 miss_1 miss_3 miss_7 miss_15 miss_60
+
+. 
+. save "temp_ITS_monthly_missed_visits_all.dta", replace
+(note: file temp_ITS_monthly_missed_visits_all.dta not found)
+file temp_ITS_monthly_missed_visits_all.dta saved
+
+. 
+. **************************************************************************************
+. * CREATE MONTHLY ADHERENCE ESTIMATES
+. **************************************************************************************
+. * create time series variables by facility
+. use "existing pts\3ie_exist_PDC.dta", clear
+
+. 
+. * restrict sample
+. drop if out_of_range==1
+(2711 observations deleted)
+
+. 
+. sort fac_id sched_mon
+
+. by fac_id sched_mon: egen avgPDC = mean(PDC)
+
+. * divide PDC by 100 to put in percent scale
+. replace avgPDC = avgPDC/100
+(57134 real changes made)
+
+. by fac_id sched_mon: egen PDC80 = mean(PDCge80)
+
+. by fac_id sched_mon: egen PDC95 = mean(PDCge95)
+
+. by fac_id sched_mon: keep if _n==1
+(56630 observations deleted)
+
+. gen group_no=fac_id+100
+
+. drop group
+
+. rename fac_label group
+
+. 
+. keep group group_no interv sched_mon sched_yr sched_mo post_its post_its2 avgPDC PDC80 PDC95
+
+. order group group_no interv sched_mon sched_yr sched_mo post_its post_its2 avgPDC PDC80 PDC95
+
+. save temp_PDC_byfacility.dta, replace
+(note: file temp_PDC_byfacility.dta not found)
+file temp_PDC_byfacility.dta saved
+
+. 
+. * create time series variables by group
+. use "existing pts\3ie_exist_PDC.dta", clear
+
+. 
+. * restrict sample
+. drop if out_of_range==1
+(2711 observations deleted)
+
+. 
+. sort group sched_mon
+
+. tabulate group, missing
+
+       Group |      Freq.     Percent        Cum.
+-------------+-----------------------------------
+     Control |     22,617       39.59       39.59
+Intervention |     34,517       60.41      100.00
+-------------+-----------------------------------
+       Total |     57,134      100.00
+
+. 
+. by group sched_mon: egen avgPDC = mean(PDC)
+
+. * divide PDC by 100 to put in percent scale
+. replace avgPDC = avgPDC/100
+(57134 real changes made)
+
+. by group sched_mon: egen PDC80 = mean(PDCge80)
+
+. by group sched_mon: egen PDC95 = mean(PDCge95)
+
+. by group sched_mon: keep if _n==1
+(57092 observations deleted)
+
+. gen group_no=0
+
+. replace group_no=1 if group=="Intervention"
+(21 real changes made)
+
+. 
+. drop if sched_mon<1 | sched_mon>21
+(0 observations deleted)
+
+. 
+. keep group group_no interv sched_mon sched_yr sched_mo post_its post_its2 avgPDC PDC80 PDC95
+
+. order group group_no interv sched_mon sched_yr sched_mo post_its post_its2 avgPDC PDC80 PDC95
+
+. 
+. save temp_PDC_bygroup.dta, replace
+(note: file temp_PDC_bygroup.dta not found)
+file temp_PDC_bygroup.dta saved
+
+. 
+. gen diff_avgPDC = avgPDC-avgPDC[_n-21] if _n>21
+(21 missing values generated)
+
+. gen diff_PDC80 = PDC80-PDC80[_n-21] if _n>21
+(21 missing values generated)
+
+. gen diff_PDC95 = PDC95-PDC95[_n-21] if _n>21
+(21 missing values generated)
+
+. drop if group=="Control"
+(21 observations deleted)
+
+. replace group="Diff"
+(21 real changes made)
+
+. replace group_no=2
+(21 real changes made)
+
+. replace interv=.
+(21 real changes made, 21 to missing)
+
+. drop avgPDC PDC80 PDC95
+
+. rename diff_avgPDC avgPDC
+
+. rename diff_PDC80 PDC80
+
+. rename diff_PDC95 PDC95
+
+. save temp_PDC_diff.dta, replace
+(note: file temp_PDC_diff.dta not found)
+file temp_PDC_diff.dta saved
+
+. 
+. use temp_PDC_bygroup.dta, clear
+
+. append using temp_PDC_diff.dta
+(label interv already defined)
+
+. append using temp_PDC_byfacility.dta
+(label interv already defined)
+
+. 
+. save "temp_ITS_monthly_PDC_all.dta", replace
+(note: file temp_ITS_monthly_PDC_all.dta not found)
+file temp_ITS_monthly_PDC_all.dta saved
+
+. 
+. *****************************************************************************************
+. * COMBINE MISSED VISIT AND PDC DATASETS FOR ITS ANALYSES
+. *****************************************************************************************
+. use "temp_ITS_monthly_missed_visits_all.dta", clear
+
+. 
+. merge 1:1 group_no sched_mon using "temp_ITS_monthly_PDC_all.dta"
+(label interv already defined)
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                             0
+    matched                               567  (_merge==3)
+    -----------------------------------------
+
+. save "existing pts\3ie_ITS_analysis_all.dta", replace
+file existing pts\3ie_ITS_analysis_all.dta saved
+
+. 
+. ******************************************************************************
+. * TIME SERIES DISPLAY OF INTERVENTION, CONTROL, AND DIFFERENCE
+. ******************************************************************************
+. use "existing pts\3ie_ITS_analysis_all.dta", clear
+
+. 
+. * restrict sample
+. drop if sched_mon>20
+(27 observations deleted)
+
+. 
+. * missed visits
+. #d ;
+delimiter now ;
+. twoway 
+>         (connected miss_1 sched_mon if group_no==1, msymbol(none)) 
+>         || connected miss_1 sched_mon if group_no==0, msymbol(none) lcolor(blue)
+>         || connected miss_1 sched_mon if group_no==2, msymbol(none) lcolor(black) lwidth(thin)
+>         scheme(s1color) graphregion(fcolor(ltbluishgray8)) plotregion(fcolor(white))
+>         title("Monthly visits missed") 
+>         subtitle("Intervention, control, monthly differences - all patients")
+>         ytitle("% visits missed") 
+>         ylabel(-.1 "-10%" 0 "0%" .1 "10%" .2 "20%" .3 "30%" .4 "40%" .5 "50%", labsize(medium) angle(horizontal) grid) 
+>         yline(0, lwidth(thin) lpattern(dash) lcolor(black)) 
+>         xtitle("Study month")
+>         xline(13.5, lwidth(thick) lpattern(solid) lcolor(black)) 
+>         legend(rows (1) lab(1 "intervention") lab(2 "control") lab(3 "I-C difference"))
+>         saving(c:\3ie\analysis\ITS_missed_all, replace)
+>         xsize(2.97) ysize(2) scale(1.0);
+(file c:\3ie\analysis\ITS_missed_all.gph saved)
+
+. #d cr
+delimiter now cr
+. 
+. * missed visits by 3 days
+. #d ;
+delimiter now ;
+. twoway 
+>         (connected miss_3 sched_mon if group_no==1, msymbol(none)) 
+>         || connected miss_3 sched_mon if group_no==0, msymbol(none) lcolor(blue)
+>         || connected miss_3 sched_mon if group_no==2, msymbol(none) lcolor(black) lwidth(thin)
+>         scheme(s1color) graphregion(fcolor(ltbluishgray8)) plotregion(fcolor(white))
+>         title("Monthly visits missed by 3+ days") 
+>         subtitle("Intervention, control, monthly differences - all patients")
+>         ytitle("% visits missed") 
+>         ylabel(-.1 "-10%" 0 "0%" .1 "10%" .2 "20%" .3 "30%" .4 "40%" .5 "50%", labsize(medium) angle(horizontal) grid) 
+>         yline(0, lwidth(thin) lpattern(dash) lcolor(black)) 
+>         xtitle("Study month")
+>         xline(13.5, lwidth(thick) lpattern(solid) lcolor(black)) 
+>         legend(rows (1) lab(1 "intervention") lab(2 "control") lab(3 "I-C difference"))
+>         saving(c:\3ie\analysis\ITS_missed3_all, replace) 
+>         xsize(2.97) ysize(2) scale(1.0);
+(file c:\3ie\analysis\ITS_missed3_all.gph saved)
+
+. #d cr
+delimiter now cr
+. 
+. * missed visits by 7 days
+. #d ;
+delimiter now ;
+. twoway 
+>         (connected miss_7 sched_mon if group_no==1, msymbol(none)) 
+>         || connected miss_7 sched_mon if group_no==0, msymbol(none) lcolor(blue)
+>         || connected miss_7 sched_mon if group_no==2, msymbol(none) lcolor(black) lwidth(thin)
+>         scheme(s1color) graphregion(fcolor(ltbluishgray8)) plotregion(fcolor(white))
+>         title("Monthly visits missed by 7+ days") 
+>         subtitle("Intervention, control, monthly differences - all patients")
+>         ytitle("% visits missed") 
+>         ylabel(-.1 "-10%" 0 "0%" .1 "10%" .2 "20%" .3 "30%" .4 "40%" .5 "50%", labsize(medium) angle(horizontal) grid) 
+>         yline(0, lwidth(thin) lpattern(dash) lcolor(black)) 
+>         xtitle("Study month")
+>         xline(13.5, lwidth(thick) lpattern(solid) lcolor(black)) 
+>         legend(rows (1) lab(1 "intervention") lab(2 "control") lab(3 "I-C difference"))
+>         saving(c:\3ie\analysis\ITS_missed7_all, replace) 
+>         xsize(2.97) ysize(2) scale(1.0);
+(file c:\3ie\analysis\ITS_missed7_all.gph saved)
+
+. #d cr
+delimiter now cr
+. 
+. * missed visits by 15 days
+. #d ;
+delimiter now ;
+. twoway 
+>         (connected miss_15 sched_mon if group_no==1, msymbol(none)) 
+>         || connected miss_15 sched_mon if group_no==0, msymbol(none) lcolor(blue)
+>         || connected miss_15 sched_mon if group_no==2, msymbol(none) lcolor(black) lwidth(thin)
+>         scheme(s1color) graphregion(fcolor(ltbluishgray8)) plotregion(fcolor(white))
+>         title("Monthly visits missed by 15+ days") 
+>         subtitle("Intervention, control, monthly differences - all patients")
+>         ytitle("% visits missed") 
+>         ylabel(-.1 "-10%" 0 "0%" .1 "10%" .2 "20%" .3 "30%" .4 "40%" .5 "50%", labsize(medium) angle(horizontal) grid) 
+>         yline(0, lwidth(thin) lpattern(dash) lcolor(black)) 
+>         xtitle("Study month")
+>         xline(13.5, lwidth(thick) lpattern(solid) lcolor(black)) 
+>         legend(rows (1) lab(1 "intervention") lab(2 "control") lab(3 "I-C difference"))
+>         saving(c:\3ie\analysis\ITS_missed15_all, replace) 
+>         xsize(2.97) ysize(2) scale(1.0);
+(file c:\3ie\analysis\ITS_missed15_all.gph saved)
+
+. #d cr
+delimiter now cr
+.   
+. * missed visits by 60 days
+. #d ;
+delimiter now ;
+. twoway 
+>         (connected miss_60 sched_mon if group_no==1, msymbol(none)) 
+>         || connected miss_60 sched_mon if group_no==0, msymbol(none) lcolor(blue)
+>         || connected miss_60 sched_mon if group_no==2, msymbol(none) lcolor(black) lwidth(thin)
+>         scheme(s1color) graphregion(fcolor(ltbluishgray8)) plotregion(fcolor(white))
+>         title("Monthly visits missed by 60+ days") 
+>         subtitle("Intervention, control, monthly differences - all patients")
+>         ytitle("% visits missed") 
+>         ylabel(-.1 "-10%" 0 "0%" .1 "10%" .2 "20%" .3 "30%" .4 "40%" .5 "50%", labsize(medium) angle(horizontal) grid) 
+>         yline(0, lwidth(thin) lpattern(dash) lcolor(black)) 
+>         xtitle("Study month")
+>         xline(13.5, lwidth(thick) lpattern(solid) lcolor(black)) 
+>         legend(rows (1) lab(1 "intervention") lab(2 "control") lab(3 "I-C difference"))
+>         saving(c:\3ie\analysis\ITS_missed60_all, replace) 
+>         xsize(2.97) ysize(2) scale(1.0);
+(file c:\3ie\analysis\ITS_missed60_all.gph saved)
+
+. #d cr
+delimiter now cr
+. 
+. * average PDC
+. #d ;
+delimiter now ;
+. twoway 
+>         (connected avgPDC sched_mon if group_no==1, msymbol(none)) 
+>         || connected avgPDC sched_mon if group_no==0, msymbol(none) lcolor(blue)
+>         || connected avgPDC sched_mon if group_no==2, msymbol(none) lcolor(black) lwidth(thin)
+>         scheme(s1color) graphregion(fcolor(ltbluishgray8)) plotregion(fcolor(white))
+>         title("Average proportion of days covered (PDC)") 
+>         subtitle("Intervention, control, monthly differences - all patients")
+>         ytitle("Average PDC") 
+>         ylabel(-.20 "-20%" 0 "0%" .20 "20%" .40 "40%" .60 "60%" .80 "80%" 1.00 "100%", labsize(medium) angle(horizontal) grid) 
+>         yline(0, lwidth(thin) lpattern(dash) lcolor(black)) 
+>         xtitle("Study month")
+>         xline(13.5, lwidth(thick) lpattern(solid) lcolor(black)) 
+>         legend(rows (1) lab(1 "intervention") lab(2 "control") lab(3 "I-C difference"))
+>         saving(c:\3ie\analysis\ITS_avgPDC_all, replace) 
+>         xsize(2.97) ysize(2) scale(1.0);
+(file c:\3ie\analysis\ITS_avgPDC_all.gph saved)
+
+. #d cr
+delimiter now cr
+. 
+. * Percent PDC 80% or more
+. #d ;
+delimiter now ;
+. twoway 
+>         (connected PDC80 sched_mon if group_no==1, msymbol(none)) 
+>         || connected PDC80 sched_mon if group_no==0, msymbol(none) lcolor(blue)
+>         || connected PDC80 sched_mon if group_no==2, msymbol(none) lcolor(black) lwidth(thin)
+>         scheme(s1color) graphregion(fcolor(ltbluishgray8)) plotregion(fcolor(white))
+>         title("Percent of patients with PDC 80% or more") 
+>         subtitle("Intervention, control, monthly differences - all patients")
+>         ytitle("% PDC >= 80%") 
+>         ylabel(-.20 "-20%" 0 "0%" .20 "20%" .40 "40%" .60 "60%" .80 "80%" 1.00 "100%", labsize(medium) angle(horizontal) grid) 
+>         yline(0, lwidth(thin) lpattern(dash) lcolor(black)) 
+>         xtitle("Study month")
+>         xline(13.5, lwidth(thick) lpattern(solid) lcolor(black)) 
+>         legend(rows (1) lab(1 "intervention") lab(2 "control") lab(3 "I-C difference"))
+>         saving(c:\3ie\analysis\ITS_PDC80_all, replace) 
+>         xsize(2.97) ysize(2) scale(1.0);
+(file c:\3ie\analysis\ITS_PDC80_all.gph saved)
+
+. #d cr
+delimiter now cr
+. 
+. * Percent PDC 95% or more
+. #d ;
+delimiter now ;
+. twoway 
+>         (connected PDC95 sched_mon if group_no==1, msymbol(none)) 
+>         || connected PDC95 sched_mon if group_no==0, msymbol(none) lcolor(blue)
+>         || connected PDC95 sched_mon if group_no==2, msymbol(none) lcolor(black) lwidth(thin)
+>         scheme(s1color) graphregion(fcolor(ltbluishgray8)) plotregion(fcolor(white))
+>         title("Percent of patients with PDC 95% or more") 
+>         subtitle("Intervention, control, monthly differences - all patients")
+>         ytitle("% PDC >= 95%") 
+>         ylabel(-.20 "-20%" 0 "0%" .20 "20%" .40 "40%" .60 "60%" .80 "80%" 1.00 "100%", labsize(medium) angle(horizontal) grid) 
+>         yline(0, lwidth(thin) lpattern(dash) lcolor(black)) 
+>         xtitle("Study month")
+>         xline(13.5, lwidth(thick) lpattern(solid) lcolor(black)) 
+>         legend(rows (1) lab(1 "intervention") lab(2 "control") lab(3 "I-C difference"))
+>         saving(c:\3ie\analysis\ITS_PDC95_all, replace) 
+>         xsize(2.97) ysize(2) scale(1.0);
+(file c:\3ie\analysis\ITS_PDC95_all.gph saved)
+
+. #d cr
+delimiter now cr
+. 
+. *****************************************************************************
+. * ITS MODEL USING NEWEY ESTIMATION
+. *****************************************************************************
+. use "existing pts\3ie_ITS_analysis_all.dta", clear
+
+. 
+. * restrict sample
+. drop if sched_mon>20
+(27 observations deleted)
+
+. 
+. * select model with month 14 missing from pre (its2_post) or included in pre (its_post)
+. gen level = post_its
+
+. * to run model with Aug 2014 not included in pre
+. * gen level = post_its2
+. gen trend = (sched_mon-13)*level 
+
+. tsset group_no sched_mon
+       panel variable:  group_no (strongly balanced)
+        time variable:  sched_mon, 1 to 20
+                delta:  1 unit
+
+. 
+. * MODEL INTERVENTION EFFECTS
+. * interv missed visits
+. newey miss_1 sched_mon level trend if group_no==1 , lag(12)
+
+Regression with Newey-West standard errors          Number of obs  =        20
+maximum lag: 12                                     F(  3,    16)  =    292.49
+                                                    Prob > F       =    0.0000
+
+------------------------------------------------------------------------------
+             |             Newey-West
+      miss_1 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   sched_mon |  -.0030722   .0010977    -2.80   0.013    -.0053993   -.0007451
+       level |  -.0582431   .0106824    -5.45   0.000    -.0808888   -.0355974
+       trend |   .0019261   .0015162     1.27   0.222     -.001288    .0051402
+       _cons |     .39115   .0070159    55.75   0.000     .3762769    .4060231
+------------------------------------------------------------------------------
+
+. predict beta
+(option xb assumed; fitted values)
+
+. estimates store I1_full_all
+
+. * outsheet using "Analysis\Interv miss_1 newey all.csv", replace comma
+. cap drop beta
+
+. *absolute change at 6 months after intervention
+. lincom _b[level]+6*_b[trend]
+
+ ( 1)  level + 6*trend = 0
+
+------------------------------------------------------------------------------
+      miss_1 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         (1) |  -.0466867   .0146619    -3.18   0.006    -.0777685   -.0156048
+------------------------------------------------------------------------------
+
+. 
+. * interv 3-day missed visits
+. newey miss_3 sched_mon level trend if group_no==1 , lag(12)
+
+Regression with Newey-West standard errors          Number of obs  =        20
+maximum lag: 12                                     F(  3,    16)  =    512.77
+                                                    Prob > F       =    0.0000
+
+------------------------------------------------------------------------------
+             |             Newey-West
+      miss_3 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   sched_mon |  -.0045366   .0007471    -6.07   0.000    -.0061204   -.0029527
+       level |  -.0360007    .007172    -5.02   0.000    -.0512046   -.0207969
+       trend |   .0040145   .0008409     4.77   0.000     .0022318    .0057973
+       _cons |   .3031384   .0037907    79.97   0.000     .2951026    .3111743
+------------------------------------------------------------------------------
+
+. predict beta
+(option xb assumed; fitted values)
+
+. estimates store I3_full_all
+
+. * outsheet using "Analysis\Interv miss_3 newey all.csv", replace comma
+. cap drop beta
+
+. *absolute change at 6 months after intervention
+. lincom _b[level]+6*_b[trend]
+
+ ( 1)  level + 6*trend = 0
+
+------------------------------------------------------------------------------
+      miss_3 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         (1) |  -.0119135   .0112323    -1.06   0.305    -.0357248    .0118978
+------------------------------------------------------------------------------
+
+. 
+. * interv 7-day missed visits
+. newey miss_7 sched_mon level trend if group_no==1 , lag(12)
+
+Regression with Newey-West standard errors          Number of obs  =        20
+maximum lag: 12                                     F(  3,    16)  =    186.19
+                                                    Prob > F       =    0.0000
+
+------------------------------------------------------------------------------
+             |             Newey-West
+      miss_7 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   sched_mon |  -.0035824   .0006919    -5.18   0.000    -.0050491   -.0021156
+       level |  -.0234128   .0066086    -3.54   0.003    -.0374224   -.0094031
+       trend |   .0036847   .0007935     4.64   0.000     .0020026    .0053668
+       _cons |   .2194654   .0039431    55.66   0.000     .2111063    .2278245
+------------------------------------------------------------------------------
+
+. predict beta
+(option xb assumed; fitted values)
+
+. estimates store I7_full_all
+
+. * outsheet using "Analysis\Interv miss_7 newey all.csv", replace comma
+. cap drop beta
+
+. *absolute change at 6 months after intervention
+. lincom _b[level]+6*_b[trend]
+
+ ( 1)  level + 6*trend = 0
+
+------------------------------------------------------------------------------
+      miss_7 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         (1) |  -.0013045   .0103804    -0.13   0.902    -.0233099     .020701
+------------------------------------------------------------------------------
+
+. 
+. * interv 15-day missed visits
+. newey miss_15 sched_mon level trend if group_no==1 & sched_mon<21, lag(12)
+
+Regression with Newey-West standard errors          Number of obs  =        20
+maximum lag: 12                                     F(  3,    16)  =     52.41
+                                                    Prob > F       =    0.0000
+
+------------------------------------------------------------------------------
+             |             Newey-West
+     miss_15 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   sched_mon |  -.0031427   .0009625    -3.27   0.005     -.005183   -.0011024
+       level |  -.0153833   .0077212    -1.99   0.064    -.0317516    .0009849
+       trend |   .0028386    .001088     2.61   0.019     .0005322    .0051449
+       _cons |   .1787028   .0067122    26.62   0.000     .1644737     .192932
+------------------------------------------------------------------------------
+
+. predict beta
+(option xb assumed; fitted values)
+
+. estimates store I15_full_all
+
+. * outsheet using "Analysis\Interv miss_15 newey all.csv", replace comma
+. cap drop beta
+
+. *absolute change at 6 months after intervention
+. lincom _b[level]+6*_b[trend]
+
+ ( 1)  level + 6*trend = 0
+
+------------------------------------------------------------------------------
+     miss_15 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         (1) |    .001648   .0131977     0.12   0.902    -.0263298    .0296258
+------------------------------------------------------------------------------
+
+. 
+. * interv 60-day missed visits
+. newey miss_60 sched_mon level trend if group_no==1 & sched_mon<20, lag(12)
+
+Regression with Newey-West standard errors          Number of obs  =        19
+maximum lag: 12                                     F(  3,    15)  =      1.98
+                                                    Prob > F       =    0.1608
+
+------------------------------------------------------------------------------
+             |             Newey-West
+     miss_60 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   sched_mon |   .0019254   .0009555     2.02   0.062    -.0001111    .0039619
+       level |  -.0155051   .0073744    -2.10   0.053    -.0312232     .000213
+       trend |  -.0014412   .0009921    -1.45   0.167    -.0035557    .0006733
+       _cons |   .0300618   .0068413     4.39   0.001     .0154799    .0446438
+------------------------------------------------------------------------------
+
+. predict beta
+(option xb assumed; fitted values)
+
+. estimates store I60_full_all
+
+. * outsheet using "Analysis\Interv miss_60 newey all.csv", replace comma
+. cap drop beta
+
+. *absolute change at 6 months after intervention
+. lincom _b[level]+6*_b[trend]
+
+ ( 1)  level + 6*trend = 0
+
+------------------------------------------------------------------------------
+     miss_60 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         (1) |  -.0241525   .0126751    -1.91   0.076    -.0511689    .0028639
+------------------------------------------------------------------------------
+
+. 
+. * PDC models exclude first month which is high by definition
+. 
+. * interv avgPDC
+. newey avgPDC sched_mon level trend if group_no==1 & sched_mon>1 , lag(12)
+
+Regression with Newey-West standard errors          Number of obs  =        19
+maximum lag: 12                                     F(  3,    15)  =     37.40
+                                                    Prob > F       =    0.0000
+
+------------------------------------------------------------------------------
+             |             Newey-West
+      avgPDC |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   sched_mon |   .0043686   .0016144     2.71   0.016     .0009277    .0078096
+       level |  -.0175253   .0082988    -2.11   0.052    -.0352138    .0001632
+       trend |  -.0001178    .001645    -0.07   0.944    -.0036239    .0033883
+       _cons |   .7922176   .0144129    54.97   0.000     .7614973    .8229379
+------------------------------------------------------------------------------
+
+. predict beta
+(option xb assumed; fitted values)
+
+. estimates store IavgPDC_full_all
+
+. * outsheet using "Analysis\Interv avgPDC newey all.csv", replace comma
+. cap drop beta
+
+. *absolute change at 6 months after intervention
+. lincom _b[level]+6*_b[trend]
+
+ ( 1)  level + 6*trend = 0
+
+------------------------------------------------------------------------------
+      avgPDC |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         (1) |   -.018232   .0173109    -1.05   0.309    -.0551293    .0186653
+------------------------------------------------------------------------------
+
+. 
+. * interv PDC80
+. newey PDC80 sched_mon level trend if group_no==1  & sched_mon>1 , lag(12)
+
+Regression with Newey-West standard errors          Number of obs  =        19
+maximum lag: 12                                     F(  3,    15)  =     27.23
+                                                    Prob > F       =    0.0000
+
+------------------------------------------------------------------------------
+             |             Newey-West
+       PDC80 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   sched_mon |   .0058441   .0023191     2.52   0.024     .0009009    .0107872
+       level |   .0006944   .0117316     0.06   0.954     -.024311    .0256997
+       trend |  -.0036799     .00227    -1.62   0.126    -.0085182    .0011584
+       _cons |   .7125271   .0205677    34.64   0.000      .668688    .7563661
+------------------------------------------------------------------------------
+
+. predict beta
+(option xb assumed; fitted values)
+
+. estimates store IPDC80_full_all
+
+. * outsheet using "Analysis\Interv PDC80 newey all.csv", replace comma
+. cap drop beta
+
+. *absolute change at 6 months after intervention
+. lincom _b[level]+6*_b[trend]
+
+ ( 1)  level + 6*trend = 0
+
+------------------------------------------------------------------------------
+       PDC80 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         (1) |  -.0213848   .0246235    -0.87   0.399    -.0738685     .031099
+------------------------------------------------------------------------------
+
+. 
+. * interv PDC95
+. newey PDC95 sched_mon level trend if group_no==1  & sched_mon>1 , lag(12)
+
+Regression with Newey-West standard errors          Number of obs  =        19
+maximum lag: 12                                     F(  3,    15)  =     21.80
+                                                    Prob > F       =    0.0000
+
+------------------------------------------------------------------------------
+             |             Newey-West
+       PDC95 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   sched_mon |   .0063539   .0015611     4.07   0.001     .0030265    .0096813
+       level |  -.0569028   .0095194    -5.98   0.000    -.0771928   -.0366127
+       trend |   .0027803   .0022704     1.22   0.240    -.0020589    .0076196
+       _cons |   .5707921   .0137401    41.54   0.000     .5415058    .6000785
+------------------------------------------------------------------------------
+
+. predict beta
+(option xb assumed; fitted values)
+
+. estimates store IPDC95_full_all
+
+. * outsheet using "Analysis\Interv PDC95 newey all.csv", replace comma
+. cap drop beta
+
+. *absolute change at 6 months after intervention
+. lincom _b[level]+6*_b[trend]
+
+ ( 1)  level + 6*trend = 0
+
+------------------------------------------------------------------------------
+       PDC95 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         (1) |   -.040221   .0186517    -2.16   0.048    -.0799761   -.0004658
+------------------------------------------------------------------------------
+
+. 
+. 
+. * MODEL DIFFERENCES
+. * diff in missed visits
+. newey miss_1 sched_mon level trend if group_no==2 , lag(12)
+
+Regression with Newey-West standard errors          Number of obs  =        20
+maximum lag: 12                                     F(  3,    16)  =    308.71
+                                                    Prob > F       =    0.0000
+
+------------------------------------------------------------------------------
+             |             Newey-West
+      miss_1 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   sched_mon |   .0007913   .0003871     2.04   0.058    -.0000294    .0016119
+       level |  -.0284911   .0083584    -3.41   0.004      -.04621   -.0107722
+       trend |   -.017904   .0018227    -9.82   0.000    -.0217681     -.01404
+       _cons |  -.0268888   .0022749   -11.82   0.000    -.0317113   -.0220662
+------------------------------------------------------------------------------
+
+. predict beta
+(option xb assumed; fitted values)
+
+. estimates store D1_full_all
+
+. * outsheet using "Analysis\Diff miss_1 newey all.csv", replace comma
+. cap drop beta
+
+. * absolute change at 6 months after intervention
+. lincom _b[level]+6*_b[trend]
+
+ ( 1)  level + 6*trend = 0
+
+------------------------------------------------------------------------------
+      miss_1 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         (1) |  -.1359152   .0076728   -17.71   0.000    -.1521808   -.1196497
+------------------------------------------------------------------------------
+
+. 
+. * diff in 3-day missed visits
+. newey miss_3 sched_mon level trend if group_no==2 , lag(12)
+
+Regression with Newey-West standard errors          Number of obs  =        20
+maximum lag: 12                                     F(  3,    16)  =    353.92
+                                                    Prob > F       =    0.0000
+
+------------------------------------------------------------------------------
+             |             Newey-West
+      miss_3 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   sched_mon |  -.0003658   .0007058    -0.52   0.611     -.001862    .0011304
+       level |  -6.40e-06   .0076462    -0.00   0.999    -.0162157    .0162029
+       trend |   -.020647   .0016334   -12.64   0.000    -.0241098   -.0171843
+       _cons |   .0011493   .0049087     0.23   0.818    -.0092566    .0115552
+------------------------------------------------------------------------------
+
+. predict beta
+(option xb assumed; fitted values)
+
+. estimates store D3_full_all
+
+. * outsheet using "Analysis\Diff miss_3 newey all.csv", replace comma
+. cap drop beta
+
+. *absolute change at 6 months after intervention
+. lincom _b[level]+6*_b[trend]
+
+ ( 1)  level + 6*trend = 0
+
+------------------------------------------------------------------------------
+      miss_3 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         (1) |  -.1238887   .0103467   -11.97   0.000    -.1458226   -.1019548
+------------------------------------------------------------------------------
+
+. 
+. * diff in 7-day missed visits
+. newey miss_7 sched_mon level trend if group_no==2 , lag(12)
+
+Regression with Newey-West standard errors          Number of obs  =        20
+maximum lag: 12                                     F(  3,    16)  =    181.62
+                                                    Prob > F       =    0.0000
+
+------------------------------------------------------------------------------
+             |             Newey-West
+      miss_7 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   sched_mon |   -.002343   .0006295    -3.72   0.002    -.0036775   -.0010086
+       level |   .0291657   .0090195     3.23   0.005     .0100453    .0482861
+       trend |  -.0209097   .0018698   -11.18   0.000    -.0248736   -.0169458
+       _cons |   .0386693   .0049638     7.79   0.000     .0281466    .0491919
+------------------------------------------------------------------------------
+
+. predict beta
+(option xb assumed; fitted values)
+
+. estimates store D7_full_all
+
+. * outsheet using "Analysis\Diff miss_7 newey all.csv", replace comma
+. cap drop beta
+
+. *absolute change at 6 months after intervention
+. lincom _b[level]+6*_b[trend]
+
+ ( 1)  level + 6*trend = 0
+
+------------------------------------------------------------------------------
+      miss_7 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         (1) |  -.0962925   .0092138   -10.45   0.000    -.1158249     -.07676
+------------------------------------------------------------------------------
+
+. 
+. * diff 15-day missed visits
+. newey miss_15 sched_mon level trend if group_no==2 & sched_mon<21, lag(12)
+
+Regression with Newey-West standard errors          Number of obs  =        20
+maximum lag: 12                                     F(  3,    16)  =    125.68
+                                                    Prob > F       =    0.0000
+
+------------------------------------------------------------------------------
+             |             Newey-West
+     miss_15 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   sched_mon |  -.0031253   .0008227    -3.80   0.002    -.0048693   -.0013813
+       level |   .0467989   .0103702     4.51   0.000      .024815    .0687828
+       trend |  -.0221571    .002172   -10.20   0.000    -.0267615   -.0175527
+       _cons |   .0537199   .0065887     8.15   0.000     .0397526    .0676873
+------------------------------------------------------------------------------
+
+. predict beta
+(option xb assumed; fitted values)
+
+. estimates store D15_full_all
+
+. * outsheet using "Analysis\Diff miss_15 newey all.csv", replace comma
+. cap drop beta
+
+. *absolute change at 6 months after intervention
+. lincom _b[level]+6*_b[trend]
+
+ ( 1)  level + 6*trend = 0
+
+------------------------------------------------------------------------------
+     miss_15 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         (1) |  -.0861437   .0109966    -7.83   0.000    -.1094555   -.0628319
+------------------------------------------------------------------------------
+
+. 
+. * diff 60-day missed visits
+. newey miss_60 sched_mon level trend if group_no==2 & sched_mon<20, lag(12)
+
+Regression with Newey-West standard errors          Number of obs  =        19
+maximum lag: 12                                     F(  3,    15)  =     79.45
+                                                    Prob > F       =    0.0000
+
+------------------------------------------------------------------------------
+             |             Newey-West
+     miss_60 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   sched_mon |   -.000549   .0005966    -0.92   0.372    -.0018206    .0007227
+       level |   .0094962   .0049723     1.91   0.075    -.0011019    .0200943
+       trend |  -.0073114   .0007001   -10.44   0.000    -.0088036   -.0058192
+       _cons |   .0156745   .0044242     3.54   0.003     .0062444    .0251045
+------------------------------------------------------------------------------
+
+. predict beta
+(option xb assumed; fitted values)
+
+. estimates store D60_full_all
+
+. * outsheet using "Analysis\Diff miss_60 newey all.csv", replace comma
+. cap drop beta
+
+. *absolute change at 6 months after intervention
+. lincom _b[level]+6*_b[trend]
+
+ ( 1)  level + 6*trend = 0
+
+------------------------------------------------------------------------------
+     miss_60 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         (1) |  -.0343721   .0071926    -4.78   0.000    -.0497028   -.0190413
+------------------------------------------------------------------------------
+
+. 
+. * PDC models exclude first month which is high by definition
+. 
+. * diff avgPDC
+. newey avgPDC sched_mon level trend if group_no==2  & sched_mon>1 , lag(12)
+
+Regression with Newey-West standard errors          Number of obs  =        19
+maximum lag: 12                                     F(  3,    15)  =    250.69
+                                                    Prob > F       =    0.0000
+
+------------------------------------------------------------------------------
+             |             Newey-West
+      avgPDC |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   sched_mon |   .0049505   .0005007     9.89   0.000     .0038833    .0060177
+       level |  -.0314804   .0048867    -6.44   0.000    -.0418961   -.0210646
+       trend |   .0056206    .000934     6.02   0.000     .0036297    .0076114
+       _cons |  -.0719877   .0044265   -16.26   0.000    -.0814226   -.0625528
+------------------------------------------------------------------------------
+
+. predict beta
+(option xb assumed; fitted values)
+
+. estimates store DavgPDC_full_all
+
+. * outsheet using "Analysis\Diff avgPDC newey all.csv", replace comma
+. cap drop beta
+
+. *absolute change at 6 months after intervention
+. lincom _b[level]+6*_b[trend]
+
+ ( 1)  level + 6*trend = 0
+
+------------------------------------------------------------------------------
+      avgPDC |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         (1) |   .0022431   .0059319     0.38   0.711    -.0104005    .0148867
+------------------------------------------------------------------------------
+
+. 
+. * diff PDC80
+. newey PDC80 sched_mon level trend if group_no==2  & sched_mon>1 , lag(12)
+
+Regression with Newey-West standard errors          Number of obs  =        19
+maximum lag: 12                                     F(  3,    15)  =    172.79
+                                                    Prob > F       =    0.0000
+
+------------------------------------------------------------------------------
+             |             Newey-West
+       PDC80 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   sched_mon |   .0064032   .0007904     8.10   0.000     .0047185    .0080879
+       level |  -.0314108   .0078542    -4.00   0.001    -.0481516     -.01467
+       trend |   .0064077   .0014031     4.57   0.000     .0034171    .0093982
+       _cons |  -.0952274   .0069592   -13.68   0.000    -.1100606   -.0803942
+------------------------------------------------------------------------------
+
+. predict beta
+(option xb assumed; fitted values)
+
+. estimates store DPDC80_full_all
+
+. * outsheet using "Analysis\Diff PDC80 newey all.csv", replace comma
+. cap drop beta
+
+. *absolute change at 6 months after intervention
+. lincom _b[level]+6*_b[trend]
+
+ ( 1)  level + 6*trend = 0
+
+------------------------------------------------------------------------------
+       PDC80 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         (1) |   .0070352   .0091798     0.77   0.455     -.012531    .0266014
+------------------------------------------------------------------------------
+
+. 
+. * diff PDC95
+. newey PDC95 sched_mon level trend if group_no==2  & sched_mon>1 , lag(12)
+
+Regression with Newey-West standard errors          Number of obs  =        19
+maximum lag: 12                                     F(  3,    15)  =    113.36
+                                                    Prob > F       =    0.0000
+
+------------------------------------------------------------------------------
+             |             Newey-West
+       PDC95 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   sched_mon |    .001418   .0005479     2.59   0.021     .0002502    .0025857
+       level |  -.0557966    .008596    -6.49   0.000    -.0741184   -.0374747
+       trend |   .0205416   .0021443     9.58   0.000     .0159711     .025112
+       _cons |  -.0665065   .0041977   -15.84   0.000    -.0754536   -.0575593
+------------------------------------------------------------------------------
+
+. predict beta
+(option xb assumed; fitted values)
+
+. estimates store DPDC95_full_all
+
+. * outsheet using "Analysis\Diff PDC95 newey all.csv", replace comma
+. cap drop beta
+
+. *absolute change at 6 months after intervention
+. lincom _b[level]+6*_b[trend]
+
+ ( 1)  level + 6*trend = 0
+
+------------------------------------------------------------------------------
+       PDC95 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         (1) |   .0674528   .0085655     7.87   0.000     .0491958    .0857098
+------------------------------------------------------------------------------
+
+. 
+. 
+. ***********************************************************************************************************
+. * TABLE ALL ESTIMATES FROM ITS MODELS FOR ALL PATIENTS
+. ***********************************************************************************************************
+. esttab I1_full_all I3_full_all I7_full_all I15_full_all I60_full_all ///
+>                 IavgPDC_full_all IPDC80_full_all IPDC95_full_all /// 
+>         using c:\3ie\analysis\ITS_all_full_model_interven.rtf, stats(N) b(%8.3f) ci(%8.2f) nogaps ///
+>         title("ITS effects full PDC models intervention group - all patients") replace
+(output written to c:\3ie\analysis\ITS_all_full_model_interven.rtf)
+
+. 
+. esttab D1_full_all D3_full_all D7_full_all D15_full_all D60_full_all ///
+>                 DavgPDC_full_all DPDC80_full_all DPDC95_full_all ///
+>         using c:\3ie\analysis\ITS_all_full_model_diffs.rtf, stats(N) b(%8.3f) ci(%8.2f) nogaps ///
+>         title("ITS effects full PDC models differences - all patients") replace
+(output written to c:\3ie\analysis\ITS_all_full_model_diffs.rtf)
+
+. 
+. log close
+      name:  <unnamed>
+       log:  c:\3ie\analysis\ITS_analysis_existing_all.log
+  log type:  text
+ closed on:  16 Sep 2016, 17:22:23
+-----------------------------------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,680 @@
+---------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  c:\3ie\analysis\GEE_analysis_existing_contin.log
+  log type:  text
+ opened on:  17 Sep 2016, 07:19:31
+
+.         
+. use "existing pts\3ie_exist_vis.dta", clear
+
+. duplicates drop base_id c_nextvisitdate , force
+
+Duplicates in terms of base_id c_nextvisitdate
+
+(103 observations deleted)
+
+. * drops 112 visits with duplicate scheduled date
+. 
+. * restrict to continuous patients
+. keep if continuous==1
+(7049 observations deleted)
+
+. 
+. iis base_id
+
+. tis c_nextvisitdate
+
+. 
+. * all visit models fully specified - CONTINUOUS PATIENTS
+. xi: xtgee miss i.post_its2 i.interv i.post_its2*i.interv i.who_stage i.post_delivery ///
+>         i.age_cat i.art_year i.fac_id, ///
+>         family(binomial) link(logit) corr(exch) robust eform noomitted
+i.post_its2       _Ipost_its2_0-1     (naturally coded; _Ipost_its2_0 omitted)
+i.interv          _Iinterv_0-1        (naturally coded; _Iinterv_0 omitted)
+i.pos~2*i.int~v   _IposXint_#_#       (coded as above)
+i.who_stage       _Iwho_stage_1-4     (naturally coded; _Iwho_stage_1 omitted)
+i.post_delivery   _Ipost_deli_0-1     (naturally coded; _Ipost_deli_0 omitted)
+i.age_cat         _Iage_cat_2-5       (naturally coded; _Iage_cat_2 omitted)
+i.art_year        _Iart_year_2012-2015(naturally coded; _Iart_year_2012 omitted)
+i.fac_id          _Ifac_id_1-24       (naturally coded; _Ifac_id_1 omitted)
+note: _Ipost_its2_1 omitted because of collinearity
+note: _Iinterv_1 omitted because of collinearity
+note: _Ifac_id_24 omitted because of collinearity
+
+Iteration 1: tolerance = .04038247
+Iteration 2: tolerance = .00020677
+Iteration 3: tolerance = 3.343e-06
+Iteration 4: tolerance = 4.147e-08
+
+GEE population-averaged model                   Number of obs      =     31010
+Group variable:                    base_id      Number of groups   =      1948
+Link:                                logit      Obs per group: min =         5
+Family:                           binomial                     avg =      15.9
+Correlation:                  exchangeable                     max =        22
+                                                Wald chi2(35)      =    458.48
+Scale parameter:                         1      Prob > chi2        =    0.0000
+
+                                   (Std. Err. adjusted for clustering on base_id)
+---------------------------------------------------------------------------------
+                |               Robust
+           miss | Odds Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+----------------+----------------------------------------------------------------
+  _Ipost_its2_1 |   1.273897   .0503513     6.12   0.000     1.178936    1.376507
+     _Iinterv_1 |   .7630191   .0726932    -2.84   0.005     .6330544    .9196653
+                |
+  _IposXint_1_1 |   .6647349   .0338791    -8.01   0.000     .6015419    .7345664
+  _Iwho_stage_2 |   1.051091    .050114     1.05   0.296     .9573187    1.154048
+  _Iwho_stage_3 |   .9111089   .0412283    -2.06   0.040     .8337826    .9956066
+  _Iwho_stage_4 |   .8361801   .0591865    -2.53   0.011     .7278638    .9606154
+  _Ipost_deli_1 |   1.017561   .0347998     0.51   0.611     .9515899    1.088105
+    _Iage_cat_3 |   .9780848   .0655453    -0.33   0.741     .8576975     1.11537
+    _Iage_cat_4 |   .9771854   .0671379    -0.34   0.737     .8540727    1.118044
+    _Iage_cat_5 |    .954627   .1009164    -0.44   0.660     .7759804    1.174402
+_Iart_year_2013 |    1.07459   .1015985     0.76   0.447     .8928215    1.293363
+_Iart_year_2014 |   1.022004   .0933878     0.24   0.812     .8544215    1.222455
+_Iart_year_2015 |   .7944054   .1082391    -1.69   0.091     .6082254    1.037576
+     _Ifac_id_2 |   1.117045   .1115578     1.11   0.268     .9184638     1.35856
+     _Ifac_id_3 |   1.154565   .1225667     1.35   0.176     .9376834     1.42161
+     _Ifac_id_4 |   1.595303   .2000312     3.72   0.000     1.247708    2.039733
+     _Ifac_id_5 |   1.463744   .1475354     3.78   0.000     1.201351    1.783448
+     _Ifac_id_6 |   1.289283   .1249099     2.62   0.009     1.066304     1.55889
+     _Ifac_id_7 |   1.128333   .1050225     1.30   0.195     .9401765    1.354144
+     _Ifac_id_8 |    .731621   .0756985    -3.02   0.003     .5973309    .8961017
+     _Ifac_id_9 |   1.223304   .1138323     2.17   0.030     1.019359    1.468051
+    _Ifac_id_10 |   .5743449   .0691715    -4.60   0.000     .4535841    .7272567
+    _Ifac_id_11 |   .8410614   .0830404    -1.75   0.080     .6930845    1.020632
+    _Ifac_id_12 |   .8727686   .0817201    -1.45   0.146     .7264377    1.048576
+    _Ifac_id_13 |   .5284851   .0635701    -5.30   0.000      .417488    .6689931
+    _Ifac_id_14 |    1.27648   .1171113     2.66   0.008       1.0664    1.527946
+    _Ifac_id_15 |   .6739807   .0824706    -3.22   0.001     .5302633      .85665
+    _Ifac_id_16 |   .8572173   .1050597    -1.26   0.209     .6741686    1.089967
+    _Ifac_id_17 |   .4952843    .044915    -7.75   0.000     .4146323    .5916243
+    _Ifac_id_18 |   1.305131   .1354731     2.57   0.010     1.064876    1.599592
+    _Ifac_id_19 |   .8916929     .07586    -1.35   0.178     .7547448     1.05349
+    _Ifac_id_20 |   1.221831   .1507001     1.62   0.104     .9594546    1.555958
+    _Ifac_id_21 |   .7939199   .0735506    -2.49   0.013     .6620937    .9519935
+    _Ifac_id_22 |   .7184614   .1216152    -1.95   0.051     .5156073    1.001124
+    _Ifac_id_23 |   1.169563   .1752588     1.05   0.296     .8719089     1.56883
+                |
+          _cons |   .6933037   .0869208    -2.92   0.003      .542259    .8864215
+---------------------------------------------------------------------------------
+
+. estimates store miss_contin_model6
+
+. xi: xtgee miss3 i.post_its2 i.interv i.post_its2*i.interv i.who_stage i.post_delivery ///
+>         i.age_cat i.art_year i.fac_id, ///
+>         family(binomial) link(logit) corr(exch) robust eform noomitted
+i.post_its2       _Ipost_its2_0-1     (naturally coded; _Ipost_its2_0 omitted)
+i.interv          _Iinterv_0-1        (naturally coded; _Iinterv_0 omitted)
+i.pos~2*i.int~v   _IposXint_#_#       (coded as above)
+i.who_stage       _Iwho_stage_1-4     (naturally coded; _Iwho_stage_1 omitted)
+i.post_delivery   _Ipost_deli_0-1     (naturally coded; _Ipost_deli_0 omitted)
+i.age_cat         _Iage_cat_2-5       (naturally coded; _Iage_cat_2 omitted)
+i.art_year        _Iart_year_2012-2015(naturally coded; _Iart_year_2012 omitted)
+i.fac_id          _Ifac_id_1-24       (naturally coded; _Ifac_id_1 omitted)
+note: _Ipost_its2_1 omitted because of collinearity
+note: _Iinterv_1 omitted because of collinearity
+note: _Ifac_id_24 omitted because of collinearity
+
+Iteration 1: tolerance = .03075385
+Iteration 2: tolerance = .00026141
+Iteration 3: tolerance = 4.603e-06
+Iteration 4: tolerance = 8.141e-08
+
+GEE population-averaged model                   Number of obs      =     30894
+Group variable:                    base_id      Number of groups   =      1948
+Link:                                logit      Obs per group: min =         4
+Family:                           binomial                     avg =      15.9
+Correlation:                  exchangeable                     max =        22
+                                                Wald chi2(35)      =    417.32
+Scale parameter:                         1      Prob > chi2        =    0.0000
+
+                                   (Std. Err. adjusted for clustering on base_id)
+---------------------------------------------------------------------------------
+                |               Robust
+          miss3 | Odds Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+----------------+----------------------------------------------------------------
+  _Ipost_its2_1 |   1.463539   .0605938     9.20   0.000     1.349468    1.587252
+     _Iinterv_1 |   .9739959   .0930977    -0.28   0.783     .8076003    1.174675
+                |
+  _IposXint_1_1 |   .6331116   .0341693    -8.47   0.000     .5695613    .7037526
+  _Iwho_stage_2 |   1.054686   .0536201     1.05   0.295     .9546583    1.165193
+  _Iwho_stage_3 |   .9604212   .0469176    -0.83   0.408     .8727294    1.056924
+  _Iwho_stage_4 |   .9026656   .0682305    -1.35   0.175     .7783706    1.046809
+  _Ipost_deli_1 |   .9413781   .0341325    -1.67   0.096     .8768014    1.010711
+    _Iage_cat_3 |   1.016955   .0717084     0.24   0.812     .8856889    1.167676
+    _Iage_cat_4 |   .9956823   .0723478    -0.06   0.953     .8635175    1.148075
+    _Iage_cat_5 |   .9905807   .1209756    -0.08   0.938     .7797154    1.258472
+_Iart_year_2013 |   1.045909   .0946624     0.50   0.620     .8758989    1.248918
+_Iart_year_2014 |   1.014751   .0882829     0.17   0.866     .8556683     1.20341
+_Iart_year_2015 |    .657541   .0881627    -3.13   0.002     .5055851    .8551678
+     _Ifac_id_2 |    .937061   .0948733    -0.64   0.521     .7684003    1.142742
+     _Ifac_id_3 |   1.033587    .117269     0.29   0.771      .827506     1.29099
+     _Ifac_id_4 |   1.786608   .2277079     4.55   0.000     1.391687    2.293597
+     _Ifac_id_5 |   1.112036   .1095998     1.08   0.281     .9166976    1.348998
+     _Ifac_id_6 |   1.289623   .1198807     2.74   0.006     1.074823     1.54735
+     _Ifac_id_7 |   1.043257   .0992367     0.45   0.656     .8658111    1.257069
+     _Ifac_id_8 |   .6117148   .0704816    -4.27   0.000     .4880606    .7666978
+     _Ifac_id_9 |    1.06414   .0967311     0.68   0.494     .8904792    1.271667
+    _Ifac_id_10 |   .5853109   .0731385    -4.29   0.000     .4581666    .7477388
+    _Ifac_id_11 |   .6996029   .0757522    -3.30   0.001     .5658281    .8650051
+    _Ifac_id_12 |   .8104104   .0792163    -2.15   0.032     .6691161    .9815412
+    _Ifac_id_13 |   .5118365   .0661238    -5.18   0.000     .3973426    .6593216
+    _Ifac_id_14 |   1.100063   .1011946     1.04   0.300     .9185774    1.317405
+    _Ifac_id_15 |   .6610997    .096449    -2.84   0.005     .4966881    .8799342
+    _Ifac_id_16 |   1.076954   .1309837     0.61   0.542     .8485359    1.366859
+    _Ifac_id_17 |   .5070295   .0512778    -6.72   0.000     .4158608    .6181851
+    _Ifac_id_18 |   1.308738    .149828     2.35   0.019     1.045694     1.63795
+    _Ifac_id_19 |   1.149537   .0976202     1.64   0.101     .9732801    1.357714
+    _Ifac_id_20 |   1.444351   .1892557     2.81   0.005      1.11722     1.86727
+    _Ifac_id_21 |   .7160156   .0729153    -3.28   0.001     .5864628    .8741872
+    _Ifac_id_22 |   .7905407   .1243151    -1.49   0.135     .5808581    1.075916
+    _Ifac_id_23 |   1.131883   .1869135     0.75   0.453     .8189142    1.564461
+                |
+          _cons |   .3820209   .0485022    -7.58   0.000     .2978632    .4899565
+---------------------------------------------------------------------------------
+
+. estimates store miss3_contin_model6
+
+. xi: xtgee miss7 i.post_its2 i.interv i.post_its2*i.interv i.who_stage i.post_delivery ///
+>         i.age_cat i.art_year i.fac_id, ///
+>         family(binomial) link(logit) corr(exch) robust eform noomitted
+i.post_its2       _Ipost_its2_0-1     (naturally coded; _Ipost_its2_0 omitted)
+i.interv          _Iinterv_0-1        (naturally coded; _Iinterv_0 omitted)
+i.pos~2*i.int~v   _IposXint_#_#       (coded as above)
+i.who_stage       _Iwho_stage_1-4     (naturally coded; _Iwho_stage_1 omitted)
+i.post_delivery   _Ipost_deli_0-1     (naturally coded; _Ipost_deli_0 omitted)
+i.age_cat         _Iage_cat_2-5       (naturally coded; _Iage_cat_2 omitted)
+i.art_year        _Iart_year_2012-2015(naturally coded; _Iart_year_2012 omitted)
+i.fac_id          _Ifac_id_1-24       (naturally coded; _Ifac_id_1 omitted)
+note: _Ipost_its2_1 omitted because of collinearity
+note: _Iinterv_1 omitted because of collinearity
+note: _Ifac_id_24 omitted because of collinearity
+
+Iteration 1: tolerance = .01501369
+Iteration 2: tolerance = .00012821
+Iteration 3: tolerance = 3.241e-06
+Iteration 4: tolerance = 6.433e-08
+
+GEE population-averaged model                   Number of obs      =     30878
+Group variable:                    base_id      Number of groups   =      1948
+Link:                                logit      Obs per group: min =         4
+Family:                           binomial                     avg =      15.9
+Correlation:                  exchangeable                     max =        22
+                                                Wald chi2(35)      =    537.33
+Scale parameter:                         1      Prob > chi2        =    0.0000
+
+                                   (Std. Err. adjusted for clustering on base_id)
+---------------------------------------------------------------------------------
+                |               Robust
+          miss7 | Odds Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+----------------+----------------------------------------------------------------
+  _Ipost_its2_1 |    1.84572   .0850689    13.30   0.000     1.686297    2.020215
+     _Iinterv_1 |   1.323479   .1332855     2.78   0.005      1.08641    1.612279
+                |
+  _IposXint_1_1 |   .5988387    .035569    -8.63   0.000     .5330296    .6727727
+  _Iwho_stage_2 |   1.036558   .0580196     0.64   0.521     .9288572    1.156746
+  _Iwho_stage_3 |   1.000231   .0531291     0.00   0.997      .901337    1.109975
+  _Iwho_stage_4 |   .9176693   .0737859    -1.07   0.285     .7838712    1.074305
+  _Ipost_deli_1 |   .8714246   .0349762    -3.43   0.001     .8054995    .9427452
+    _Iage_cat_3 |    .968946   .0697029    -0.44   0.661     .8415247    1.115661
+    _Iage_cat_4 |   .9208193   .0683304    -1.11   0.266     .7961778    1.064973
+    _Iage_cat_5 |     .81407   .1255286    -1.33   0.182     .6017381    1.101326
+_Iart_year_2013 |   1.004931   .0860485     0.06   0.954     .8496718    1.188561
+_Iart_year_2014 |   .9727629   .0784819    -0.34   0.732     .8304865    1.139414
+_Iart_year_2015 |   .5873939   .0799724    -3.91   0.000     .4498215    .7670412
+     _Ifac_id_2 |   .7957482   .0803793    -2.26   0.024     .6528223    .9699656
+     _Ifac_id_3 |   1.044678   .1155168     0.40   0.693     .8411236    1.297494
+     _Ifac_id_4 |     1.7735     .22856     4.45   0.000      1.37763    2.283126
+     _Ifac_id_5 |   .7804893   .0815271    -2.37   0.018     .6359947    .9578122
+     _Ifac_id_6 |   1.294646   .1212493     2.76   0.006     1.077537    1.555499
+     _Ifac_id_7 |   .9603066   .0932793    -0.42   0.677     .7938318    1.161693
+     _Ifac_id_8 |   .5537582   .0665807    -4.92   0.000     .4374985    .7009124
+     _Ifac_id_9 |   .9755337   .0879437    -0.27   0.783     .8175363    1.164066
+    _Ifac_id_10 |   .5818143   .0659774    -4.78   0.000     .4658634    .7266246
+    _Ifac_id_11 |   .5191962   .0654181    -5.20   0.000     .4055844    .6646328
+    _Ifac_id_12 |   .7007178   .0716113    -3.48   0.001     .5735258    .8561175
+    _Ifac_id_13 |   .5887284   .0852209    -3.66   0.000     .4433023    .7818617
+    _Ifac_id_14 |   1.020449   .1053679     0.20   0.845     .8334883    1.249348
+    _Ifac_id_15 |   .6405434   .0978208    -2.92   0.004     .4748506    .8640525
+    _Ifac_id_16 |   1.150532   .1467521     1.10   0.272     .8960383    1.477307
+    _Ifac_id_17 |   .5251314   .0591038    -5.72   0.000     .4211772    .6547435
+    _Ifac_id_18 |   1.434343   .1915669     2.70   0.007        1.104    1.863534
+    _Ifac_id_19 |   1.460977   .1309685     4.23   0.000     1.225569    1.741602
+    _Ifac_id_20 |    1.39151    .208518     2.20   0.027      1.03737    1.866547
+    _Ifac_id_21 |    .659981   .0730576    -3.75   0.000      .531259    .8198917
+    _Ifac_id_22 |   .7325217   .0967643    -2.36   0.018     .5654301     .948991
+    _Ifac_id_23 |   1.151554   .1982468     0.82   0.412       .82176    1.613703
+                |
+          _cons |   .2232836   .0287162   -11.66   0.000     .1735341    .2872955
+---------------------------------------------------------------------------------
+
+. estimates store miss7_contin_model6
+
+. xi: xtgee miss15 i.post_its2 i.interv i.post_its2*i.interv i.who_stage i.post_delivery ///
+>         i.age_cat i.art_year i.fac_id, ///
+>         family(binomial) link(logit) corr(exch) robust eform noomitted
+i.post_its2       _Ipost_its2_0-1     (naturally coded; _Ipost_its2_0 omitted)
+i.interv          _Iinterv_0-1        (naturally coded; _Iinterv_0 omitted)
+i.pos~2*i.int~v   _IposXint_#_#       (coded as above)
+i.who_stage       _Iwho_stage_1-4     (naturally coded; _Iwho_stage_1 omitted)
+i.post_delivery   _Ipost_deli_0-1     (naturally coded; _Ipost_deli_0 omitted)
+i.age_cat         _Iage_cat_2-5       (naturally coded; _Iage_cat_2 omitted)
+i.art_year        _Iart_year_2012-2015(naturally coded; _Iart_year_2012 omitted)
+i.fac_id          _Ifac_id_1-24       (naturally coded; _Ifac_id_1 omitted)
+note: _Ipost_its2_1 omitted because of collinearity
+note: _Iinterv_1 omitted because of collinearity
+note: _Ifac_id_24 omitted because of collinearity
+
+Iteration 1: tolerance = .00956097
+Iteration 2: tolerance = .00011205
+Iteration 3: tolerance = 3.176e-06
+Iteration 4: tolerance = 7.181e-08
+
+GEE population-averaged model                   Number of obs      =     30519
+Group variable:                    base_id      Number of groups   =      1948
+Link:                                logit      Obs per group: min =         4
+Family:                           binomial                     avg =      15.7
+Correlation:                  exchangeable                     max =        22
+                                                Wald chi2(35)      =    542.70
+Scale parameter:                         1      Prob > chi2        =    0.0000
+
+                                   (Std. Err. adjusted for clustering on base_id)
+---------------------------------------------------------------------------------
+                |               Robust
+         miss15 | Odds Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+----------------+----------------------------------------------------------------
+  _Ipost_its2_1 |   1.880065   .1019319    11.64   0.000     1.690531    2.090849
+     _Iinterv_1 |   1.890235   .2036047     5.91   0.000     1.530486    2.334544
+                |
+  _IposXint_1_1 |   .5335229   .0371965    -9.01   0.000     .4653807    .6116426
+  _Iwho_stage_2 |   1.001937   .0594435     0.03   0.974     .8919487    1.125488
+  _Iwho_stage_3 |   1.024721   .0565869     0.44   0.658     .9196034    1.141853
+  _Iwho_stage_4 |   .9468703   .0855409    -0.60   0.546     .7932177    1.130287
+  _Ipost_deli_1 |   .8465941    .037589    -3.75   0.000     .7760356    .9235679
+    _Iage_cat_3 |   .9709365   .0749632    -0.38   0.702     .8345878    1.129561
+    _Iage_cat_4 |    .915739   .0727843    -1.11   0.268     .7836406    1.070105
+    _Iage_cat_5 |   .8560876   .1354763    -0.98   0.326     .6277912    1.167404
+_Iart_year_2013 |   .9617553   .0862044    -0.44   0.664     .8068065    1.146462
+_Iart_year_2014 |   .8997217   .0765473    -1.24   0.214     .7615332    1.062986
+_Iart_year_2015 |   .4541951   .0802997    -4.46   0.000      .321184    .6422899
+     _Ifac_id_2 |   .7104797   .0727029    -3.34   0.001     .5813649    .8682695
+     _Ifac_id_3 |   1.073514   .1279952     0.59   0.552     .8498038    1.356115
+     _Ifac_id_4 |   1.417808   .1861671     2.66   0.008     1.096098    1.833941
+     _Ifac_id_5 |   .6309677   .0722388    -4.02   0.000     .5041433    .7896965
+     _Ifac_id_6 |   1.240515   .1228968     2.18   0.030     1.021584    1.506363
+     _Ifac_id_7 |   .9198056   .0917401    -0.84   0.402     .7564818    1.118391
+     _Ifac_id_8 |   .4181939   .0567216    -6.43   0.000     .3205717    .5455446
+     _Ifac_id_9 |   .9021855   .0870204    -1.07   0.286     .7467808     1.08993
+    _Ifac_id_10 |    .592691   .0709927    -4.37   0.000     .4686744    .7495239
+    _Ifac_id_11 |   .4301054   .0615648    -5.89   0.000     .3248889    .5693967
+    _Ifac_id_12 |    .552843   .0607388    -5.39   0.000      .445742    .6856778
+    _Ifac_id_13 |   .7439769   .1156379    -1.90   0.057     .5485995    1.008936
+    _Ifac_id_14 |   1.313777   .1451454     2.47   0.014      1.05799    1.631406
+    _Ifac_id_15 |   .7367114   .1167946    -1.93   0.054     .5399482    1.005177
+    _Ifac_id_16 |   1.289386   .1811781     1.81   0.070     .9789853    1.698203
+    _Ifac_id_17 |    .544947   .0690948    -4.79   0.000     .4250391    .6986821
+    _Ifac_id_18 |   1.725294   .2500427     3.76   0.000     1.298675    2.292059
+    _Ifac_id_19 |   1.744092   .1683491     5.76   0.000     1.443467    2.107327
+    _Ifac_id_20 |   1.428091   .2264448     2.25   0.025     1.046611    1.948616
+    _Ifac_id_21 |   .7795834   .0902943    -2.15   0.032     .6212596    .9782548
+    _Ifac_id_22 |   .6715425   .0905339    -2.95   0.003     .5156071    .8746376
+    _Ifac_id_23 |   1.407761   .2337763     2.06   0.039     1.016661    1.949313
+                |
+          _cons |    .141411   .0195739   -14.13   0.000     .1078106    .1854834
+---------------------------------------------------------------------------------
+
+. estimates store miss15_contin_model6
+
+. xi: xtgee miss60 i.post_its2 i.interv i.post_its2*i.interv i.who_stage i.post_delivery ///
+>         i.age_cat i.art_year i.fac_id, ///
+>         family(binomial) link(logit) corr(exch) robust eform noomitted
+i.post_its2       _Ipost_its2_0-1     (naturally coded; _Ipost_its2_0 omitted)
+i.interv          _Iinterv_0-1        (naturally coded; _Iinterv_0 omitted)
+i.pos~2*i.int~v   _IposXint_#_#       (coded as above)
+i.who_stage       _Iwho_stage_1-4     (naturally coded; _Iwho_stage_1 omitted)
+i.post_delivery   _Ipost_deli_0-1     (naturally coded; _Ipost_deli_0 omitted)
+i.age_cat         _Iage_cat_2-5       (naturally coded; _Iage_cat_2 omitted)
+i.art_year        _Iart_year_2012-2015(naturally coded; _Iart_year_2012 omitted)
+i.fac_id          _Ifac_id_1-24       (naturally coded; _Ifac_id_1 omitted)
+note: _Ipost_its2_1 omitted because of collinearity
+note: _Iinterv_1 omitted because of collinearity
+note: _Ifac_id_24 omitted because of collinearity
+
+Iteration 1: tolerance = .00715808
+Iteration 2: tolerance = .00004217
+Iteration 3: tolerance = 1.461e-06
+Iteration 4: tolerance = 2.568e-08
+
+GEE population-averaged model                   Number of obs      =     29788
+Group variable:                    base_id      Number of groups   =      1948
+Link:                                logit      Obs per group: min =         4
+Family:                           binomial                     avg =      15.3
+Correlation:                  exchangeable                     max =        22
+                                                Wald chi2(35)      =    225.27
+Scale parameter:                         1      Prob > chi2        =    0.0000
+
+                                   (Std. Err. adjusted for clustering on base_id)
+---------------------------------------------------------------------------------
+                |               Robust
+         miss60 | Odds Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+----------------+----------------------------------------------------------------
+  _Ipost_its2_1 |   2.003723   .2523886     5.52   0.000     1.565382    2.564808
+     _Iinterv_1 |   2.304888   .5998925     3.21   0.001      1.38391    3.838767
+                |
+  _IposXint_1_1 |   .3285603   .0555897    -6.58   0.000     .2358299    .4577531
+  _Iwho_stage_2 |   1.388139    .170833     2.66   0.008     1.090633    1.766799
+  _Iwho_stage_3 |   1.059311   .1281674     0.48   0.634     .8356708      1.3428
+  _Iwho_stage_4 |   1.210563    .223048     1.04   0.300     .8436302    1.737091
+  _Ipost_deli_1 |   .7547735   .0681432    -3.12   0.002     .6323647    .9008774
+    _Iage_cat_3 |   .8697143   .1399301    -0.87   0.386     .6344904    1.192142
+    _Iage_cat_4 |   .6494435   .1085371    -2.58   0.010     .4680431    .9011497
+    _Iage_cat_5 |   .3859946   .1739289    -2.11   0.035     .1595991    .9335379
+_Iart_year_2013 |   .9329542   .1755702    -0.37   0.712     .6451711    1.349105
+_Iart_year_2014 |   .7015243   .1268128    -1.96   0.050     .4922358     .999798
+_Iart_year_2015 |   .2667823   .1442283    -2.44   0.015     .0924653    .7697241
+     _Ifac_id_2 |   .6024482   .1582448    -1.93   0.054      .360027    1.008102
+     _Ifac_id_3 |   .9470741   .2708928    -0.19   0.849     .5406469     1.65903
+     _Ifac_id_4 |   1.634368   .4187927     1.92   0.055     .9890921    2.700616
+     _Ifac_id_5 |   .5677441   .1618772    -1.99   0.047     .3246796    .9927736
+     _Ifac_id_6 |   1.173869   .2830073     0.66   0.506     .7318196    1.882935
+     _Ifac_id_7 |   .7434036   .1937064    -1.14   0.255     .4460974    1.238852
+     _Ifac_id_8 |   .3435156   .1227641    -2.99   0.003     .1705092    .6920621
+     _Ifac_id_9 |   1.118696   .2528638     0.50   0.620     .7183093     1.74226
+    _Ifac_id_10 |   .6176948   .1815019    -1.64   0.101     .3472634    1.098725
+    _Ifac_id_11 |   .2878423   .1023797    -3.50   0.000     .1433506    .5779761
+    _Ifac_id_12 |   .5557691    .143639    -2.27   0.023     .3348888    .9223339
+    _Ifac_id_13 |   .9452768    .302433    -0.18   0.860     .5049223    1.769675
+    _Ifac_id_14 |   1.484892   .3547378     1.65   0.098     .9297039    2.371621
+    _Ifac_id_15 |    .969646   .4429974    -0.07   0.946     .3960307    2.374092
+    _Ifac_id_16 |   1.578571    .478051     1.51   0.132     .8719428    2.857854
+    _Ifac_id_17 |   .3200996   .1418134    -2.57   0.010     .1343316    .7627672
+    _Ifac_id_18 |   2.078327   .5469581     2.78   0.005     1.240799    3.481181
+    _Ifac_id_19 |   1.813186   .4159976     2.59   0.009     1.156517    2.842712
+    _Ifac_id_20 |   .8427924   .2888512    -0.50   0.618     .4305141    1.649886
+    _Ifac_id_21 |    .828053   .2290329    -0.68   0.495     .4815291    1.423947
+    _Ifac_id_22 |   1.904805   .4975294     2.47   0.014     1.141614    3.178205
+    _Ifac_id_23 |   2.170857   .6919263     2.43   0.015     1.162316    4.054509
+                |
+          _cons |   .0267501    .008167   -11.86   0.000     .0147044    .0486634
+---------------------------------------------------------------------------------
+
+. estimates store miss60_contin_model6
+
+. 
+. esttab miss_contin_model6 miss3_contin_model6 miss7_contin_model6 miss15_contin_model6 miss60_contin_model6 /
+> //
+>         using c:\3ie\analysis\GEE_contin_miss_model6.rtf, ///
+>         stats(N) b(%8.2f) ci(%8.2f) eform nogaps drop(_cons) ///
+>         title("GEE DiD effects full models miss - 2016 patients") replace
+(output written to c:\3ie\analysis\GEE_contin_miss_model6.rtf)
+
+. 
+. ***********************************************************************************************
+. * GEE DiD MODELS TESTING CHANGES IN PDC BY GROUP AMONG CONTINUOUS PATIENTS
+. ***********************************************************************************************
+. use "existing pts\3ie_exist_PDC.dta", clear
+
+. 
+. keep if continuous==1
+(9102 observations deleted)
+
+. 
+. * sort fac_id
+. * by fac_id: prtest miss , by(post_its2)
+. iis end_id
+
+. tis sched_mon
+
+. * xtdes
+. 
+. * replace average PDC with a proportional value to model as a rate
+. replace PDC = PDC/100
+(48648 real changes made)
+
+. 
+. * prepost change in avgPDC, PDCge80 and PDCge95 by group fully specified
+. xi: xtgee PDC i.post_its2 i.interv i.post_its2*i.interv i.who_stage i.post_delivery ///
+>         i.age_cat i.art_year i.fac_id, ///
+>         family(gaussian) robust noomitted
+i.post_its2       _Ipost_its2_0-1     (naturally coded; _Ipost_its2_0 omitted)
+i.interv          _Iinterv_0-1        (naturally coded; _Iinterv_0 omitted)
+i.pos~2*i.int~v   _IposXint_#_#       (coded as above)
+i.who_stage       _Iwho_stage_1-4     (naturally coded; _Iwho_stage_1 omitted)
+i.post_delivery   _Ipost_deli_0-1     (naturally coded; _Ipost_deli_0 omitted)
+i.age_cat         _Iage_cat_2-5       (naturally coded; _Iage_cat_2 omitted)
+i.art_year        _Iart_year_2012-2015(naturally coded; _Iart_year_2012 omitted)
+i.fac_id          _Ifac_id_1-24       (naturally coded; _Ifac_id_1 omitted)
+note: _Ipost_its2_1 omitted because of collinearity
+note: _Iinterv_1 omitted because of collinearity
+note: _Ifac_id_24 omitted because of collinearity
+
+Iteration 1: tolerance = .00686772
+Iteration 2: tolerance = .00001052
+Iteration 3: tolerance = 1.823e-08
+
+GEE population-averaged model                   Number of obs      =     37010
+Group variable:                     end_id      Number of groups   =      1948
+Link:                             identity      Obs per group: min =        10
+Family:                           Gaussian                     avg =      19.0
+Correlation:                  exchangeable                     max =        20
+                                                Wald chi2(35)      =    654.42
+Scale parameter:                   .073091      Prob > chi2        =    0.0000
+
+                                    (Std. Err. adjusted for clustering on end_id)
+---------------------------------------------------------------------------------
+                |               Robust
+            PDC |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+----------------+----------------------------------------------------------------
+  _Ipost_its2_1 |    -.01928    .006719    -2.87   0.004     -.032449    -.006111
+     _Iinterv_1 |  -.0818735   .0142173    -5.76   0.000    -.1097389   -.0540081
+                |
+  _IposXint_1_1 |     .04809   .0084621     5.68   0.000     .0315047    .0646754
+  _Iwho_stage_2 |  -.0155885   .0078027    -2.00   0.046    -.0308815   -.0002956
+  _Iwho_stage_3 |  -.0101612   .0072766    -1.40   0.163    -.0244231    .0041008
+  _Iwho_stage_4 |  -.0108648   .0103853    -1.05   0.295    -.0312197    .0094901
+  _Ipost_deli_1 |  -.0028182   .0054076    -0.52   0.602    -.0134169    .0077805
+    _Iage_cat_3 |   .0083524   .0113267     0.74   0.461    -.0138477    .0305524
+    _Iage_cat_4 |   .0174464   .0114523     1.52   0.128    -.0049998    .0398925
+    _Iage_cat_5 |    .036603    .017572     2.08   0.037     .0021625    .0710436
+_Iart_year_2013 |   .0263366   .0152736     1.72   0.085     -.003599    .0562722
+_Iart_year_2014 |    .027982    .014873     1.88   0.060    -.0011686    .0571326
+_Iart_year_2015 |   .0988527   .0176943     5.59   0.000     .0641725     .133533
+     _Ifac_id_2 |   .0244316   .0138776     1.76   0.078     -.002768    .0516311
+     _Ifac_id_3 |   -.013623   .0178175    -0.76   0.445    -.0485445    .0212986
+     _Ifac_id_4 |  -.0903612   .0211649    -4.27   0.000    -.1318437   -.0488787
+     _Ifac_id_5 |   .0590753   .0139541     4.23   0.000     .0317258    .0864247
+     _Ifac_id_6 |  -.0137101   .0151161    -0.91   0.364    -.0433371    .0159169
+     _Ifac_id_7 |   .0091111   .0145068     0.63   0.530    -.0193217    .0375438
+     _Ifac_id_8 |    .071613   .0157737     4.54   0.000     .0406972    .1025289
+     _Ifac_id_9 |  -.0660326   .0161598    -4.09   0.000    -.0977052   -.0343599
+    _Ifac_id_10 |   .0357933   .0144282     2.48   0.013     .0075146    .0640721
+    _Ifac_id_11 |   .0907483     .01455     6.24   0.000     .0622309    .1192657
+    _Ifac_id_12 |   .0562057   .0139736     4.02   0.000      .028818    .0835935
+    _Ifac_id_13 |  -.0133422   .0164768    -0.81   0.418    -.0456361    .0189517
+    _Ifac_id_14 |  -.0388969   .0139446    -2.79   0.005    -.0662278   -.0115661
+    _Ifac_id_15 |   .0293857   .0227028     1.29   0.196     -.015111    .0738823
+    _Ifac_id_16 |  -.0892132   .0218642    -4.08   0.000    -.1320662   -.0463602
+    _Ifac_id_17 |    .050069   .0124173     4.03   0.000     .0257316    .0744065
+    _Ifac_id_18 |  -.1113832   .0187799    -5.93   0.000    -.1481911   -.0745753
+    _Ifac_id_19 |  -.0747785   .0141649    -5.28   0.000    -.1025411   -.0470158
+    _Ifac_id_20 |  -.0532825   .0194416    -2.74   0.006    -.0913873   -.0151777
+    _Ifac_id_21 |   .0105264    .011719     0.90   0.369    -.0124425    .0334952
+    _Ifac_id_22 |   .0470764   .0124921     3.77   0.000     .0225922    .0715605
+    _Ifac_id_23 |  -.0869488   .0274603    -3.17   0.002    -.1407701   -.0331276
+                |
+          _cons |   .8701857   .0213483    40.76   0.000     .8283438    .9120275
+---------------------------------------------------------------------------------
+
+. estimates store PDC_contin_model6
+
+. xi: xtgee PDCge80 i.post_its2 i.interv i.post_its2*i.interv i.who_stage i.post_delivery ///
+>         i.age_cat i.art_year i.fac_id, ///
+>         family(binomial) link(logit) corr(exch) robust eform noomitted
+i.post_its2       _Ipost_its2_0-1     (naturally coded; _Ipost_its2_0 omitted)
+i.interv          _Iinterv_0-1        (naturally coded; _Iinterv_0 omitted)
+i.pos~2*i.int~v   _IposXint_#_#       (coded as above)
+i.who_stage       _Iwho_stage_1-4     (naturally coded; _Iwho_stage_1 omitted)
+i.post_delivery   _Ipost_deli_0-1     (naturally coded; _Ipost_deli_0 omitted)
+i.age_cat         _Iage_cat_2-5       (naturally coded; _Iage_cat_2 omitted)
+i.art_year        _Iart_year_2012-2015(naturally coded; _Iart_year_2012 omitted)
+i.fac_id          _Ifac_id_1-24       (naturally coded; _Ifac_id_1 omitted)
+note: _Ipost_its2_1 omitted because of collinearity
+note: _Iinterv_1 omitted because of collinearity
+note: _Ifac_id_24 omitted because of collinearity
+
+Iteration 1: tolerance = .04598726
+Iteration 2: tolerance = .00205065
+Iteration 3: tolerance = .00003912
+Iteration 4: tolerance = 4.932e-07
+
+GEE population-averaged model                   Number of obs      =     37010
+Group variable:                     end_id      Number of groups   =      1948
+Link:                                logit      Obs per group: min =        10
+Family:                           binomial                     avg =      19.0
+Correlation:                  exchangeable                     max =        20
+                                                Wald chi2(35)      =    514.79
+Scale parameter:                         1      Prob > chi2        =    0.0000
+
+                                    (Std. Err. adjusted for clustering on end_id)
+---------------------------------------------------------------------------------
+                |               Robust
+        PDCge80 | Odds Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+----------------+----------------------------------------------------------------
+  _Ipost_its2_1 |    .877203   .0541554    -2.12   0.034     .7772307    .9900344
+     _Iinterv_1 |   .4811877    .062475    -5.63   0.000     .3730773    .6206265
+                |
+  _IposXint_1_1 |   1.560234   .1216031     5.71   0.000     1.339207    1.817739
+  _Iwho_stage_2 |   .9113059   .0590154    -1.43   0.152     .8026775    1.034635
+  _Iwho_stage_3 |   .9204868   .0561717    -1.36   0.175     .8167213    1.037436
+  _Iwho_stage_4 |   .9688969   .0876705    -0.35   0.727     .8114405    1.156907
+  _Ipost_deli_1 |   .9723613   .0447008    -0.61   0.542     .8885804    1.064042
+    _Iage_cat_3 |    1.07344   .1019795     0.75   0.456     .8910697    1.293136
+    _Iage_cat_4 |    1.13934   .1105019     1.35   0.179     .9421008    1.377874
+    _Iage_cat_5 |   1.367833   .2396073     1.79   0.074     .9703437    1.928149
+_Iart_year_2013 |    1.18981   .1250587     1.65   0.098     .9682992    1.461995
+_Iart_year_2014 |   1.194804    .119214     1.78   0.074     .9825767    1.452871
+_Iart_year_2015 |   3.495377   .8439883     5.18   0.000      2.17753    5.610788
+     _Ifac_id_2 |    1.40275    .175011     2.71   0.007     1.098455    1.791342
+     _Ifac_id_3 |   .8896226   .1208796    -0.86   0.389      .681627    1.161087
+     _Ifac_id_4 |   .5922055   .0779845    -3.98   0.000     .4574905    .7665893
+     _Ifac_id_5 |    1.78789   .2433624     4.27   0.000     1.369234    2.334553
+     _Ifac_id_6 |   .8410252   .0975177    -1.49   0.135     .6700565    1.055618
+     _Ifac_id_7 |   1.038385   .1185889     0.33   0.742     .8301315    1.298883
+     _Ifac_id_8 |   1.931974   .2810708     4.53   0.000     1.452664    2.569433
+     _Ifac_id_9 |   .7398533   .0815493    -2.73   0.006     .5961055    .9182651
+    _Ifac_id_10 |   1.666782   .2179767     3.91   0.000     1.289916    2.153756
+    _Ifac_id_11 |   2.401063   .3930982     5.35   0.000     1.741992    3.309489
+    _Ifac_id_12 |    1.74079    .221015     4.37   0.000     1.357299    2.232631
+    _Ifac_id_13 |   .8932635   .1603442    -0.63   0.529     .6283269    1.269912
+    _Ifac_id_14 |   .7299857   .0950588    -2.42   0.016     .5655498     .942232
+    _Ifac_id_15 |   1.549282   .4333727     1.57   0.118     .8954227    2.680604
+    _Ifac_id_16 |   .4918381   .0785466    -4.44   0.000     .3596542    .6726036
+    _Ifac_id_17 |   1.859783   .3301133     3.50   0.000     1.313328    2.633609
+    _Ifac_id_18 |   .4221321   .0625419    -5.82   0.000     .3157452    .5643649
+    _Ifac_id_19 |   .5122034   .0609264    -5.62   0.000     .4056881    .6466847
+    _Ifac_id_20 |   .6183157   .1049246    -2.83   0.005     .4433701    .8622918
+    _Ifac_id_21 |    1.35554   .2045077     2.02   0.044      1.00854    1.821929
+    _Ifac_id_22 |   1.919214   .3746911     3.34   0.001     1.309007    2.813875
+    _Ifac_id_23 |   .5415278   .1030903    -3.22   0.001     .3728877    .7864362
+                |
+          _cons |   4.700923   .7870014     9.25   0.000     3.385945    6.526591
+---------------------------------------------------------------------------------
+
+. estimates store PDCge80_contin_model6
+
+. xi: xtgee PDCge95 i.post_its2 i.interv i.post_its2*i.interv i.who_stage i.post_delivery ///
+>         i.age_cat i.art_year i.fac_id, ///
+>         family(binomial) link(logit) corr(exch) robust eform noomitted
+i.post_its2       _Ipost_its2_0-1     (naturally coded; _Ipost_its2_0 omitted)
+i.interv          _Iinterv_0-1        (naturally coded; _Iinterv_0 omitted)
+i.pos~2*i.int~v   _IposXint_#_#       (coded as above)
+i.who_stage       _Iwho_stage_1-4     (naturally coded; _Iwho_stage_1 omitted)
+i.post_delivery   _Ipost_deli_0-1     (naturally coded; _Ipost_deli_0 omitted)
+i.age_cat         _Iage_cat_2-5       (naturally coded; _Iage_cat_2 omitted)
+i.art_year        _Iart_year_2012-2015(naturally coded; _Iart_year_2012 omitted)
+i.fac_id          _Ifac_id_1-24       (naturally coded; _Ifac_id_1 omitted)
+note: _Ipost_its2_1 omitted because of collinearity
+note: _Iinterv_1 omitted because of collinearity
+note: _Ifac_id_24 omitted because of collinearity
+
+Iteration 1: tolerance = .04659964
+Iteration 2: tolerance = .00181363
+Iteration 3: tolerance = .00004085
+Iteration 4: tolerance = 6.939e-07
+
+GEE population-averaged model                   Number of obs      =     37010
+Group variable:                     end_id      Number of groups   =      1948
+Link:                                logit      Obs per group: min =        10
+Family:                           binomial                     avg =      19.0
+Correlation:                  exchangeable                     max =        20
+                                                Wald chi2(35)      =    683.34
+Scale parameter:                         1      Prob > chi2        =    0.0000
+
+                                    (Std. Err. adjusted for clustering on end_id)
+---------------------------------------------------------------------------------
+                |               Robust
+        PDCge95 | Odds Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+----------------+----------------------------------------------------------------
+  _Ipost_its2_1 |   .8310998   .0439138    -3.50   0.000     .7493372    .9217838
+     _Iinterv_1 |   .4519163   .0526088    -6.82   0.000     .3597222    .5677389
+                |
+  _IposXint_1_1 |    1.34041   .0879824     4.46   0.000     1.178599    1.524436
+  _Iwho_stage_2 |   .9017645     .05227    -1.78   0.074     .8049224    1.010258
+  _Iwho_stage_3 |   .9491558   .0518722    -0.95   0.340     .8527439    1.056468
+  _Iwho_stage_4 |   .9515768   .0815557    -0.58   0.563     .8044349    1.125633
+  _Ipost_deli_1 |   .9001747   .0380342    -2.49   0.013     .8286323    .9778941
+    _Iage_cat_3 |   1.013258   .0849646     0.16   0.875     .8596951    1.194251
+    _Iage_cat_4 |   1.041295   .0894687     0.47   0.638     .8799091     1.23228
+    _Iage_cat_5 |   1.206835   .1933356     1.17   0.241     .8816272    1.652003
+_Iart_year_2013 |   1.135865   .1094333     1.32   0.186     .9404139    1.371938
+_Iart_year_2014 |   1.186993   .1086138     1.87   0.061     .9921112    1.420155
+_Iart_year_2015 |   2.832712   .5557808     5.31   0.000     1.928394    4.161108
+     _Ifac_id_2 |   .9373069   .0959714    -0.63   0.527      .766879     1.14561
+     _Ifac_id_3 |   1.016127   .1282914     0.13   0.899     .7933761    1.301417
+     _Ifac_id_4 |   .6029703   .0783175    -3.89   0.000     .4674515    .7777773
+     _Ifac_id_5 |   1.510842   .1705867     3.65   0.000     1.210909    1.885067
+     _Ifac_id_6 |   .9961853   .1065067    -0.04   0.971     .8078567    1.228417
+     _Ifac_id_7 |   1.109945   .1133311     1.02   0.307     .9086344    1.355855
+     _Ifac_id_8 |   2.504268   .3383855     6.79   0.000     1.921603     3.26361
+     _Ifac_id_9 |   .6159721   .0597482    -5.00   0.000     .5093262    .7449482
+    _Ifac_id_10 |    1.38147   .1540445     2.90   0.004     1.110263    1.718925
+    _Ifac_id_11 |   2.778662   .3826349     7.42   0.000     2.121394    3.639571
+    _Ifac_id_12 |    2.20161   .2496611     6.96   0.000     1.762847    2.749578
+    _Ifac_id_13 |   .7265316   .1078664    -2.15   0.031     .5430986    .9719197
+    _Ifac_id_14 |   .6514309   .0792946    -3.52   0.000     .5131648     .826951
+    _Ifac_id_15 |   1.103096   .2358614     0.46   0.646     .7254568    1.677318
+    _Ifac_id_16 |   .5284778   .0768085    -4.39   0.000     .3974787    .7026509
+    _Ifac_id_17 |   1.924268   .3195541     3.94   0.000     1.389666     2.66453
+    _Ifac_id_18 |   .3073467   .0399875    -9.07   0.000     .2381674      .39662
+    _Ifac_id_19 |   .5770453   .0670031    -4.74   0.000      .459593    .7245133
+    _Ifac_id_20 |   .4572665   .0662774    -5.40   0.000     .3441867    .6074978
+    _Ifac_id_21 |   .8003141   .1002582    -1.78   0.075     .6260765    1.023042
+    _Ifac_id_22 |   2.014887   .3255843     4.34   0.000     1.467931    2.765641
+    _Ifac_id_23 |   .4557432   .0774281    -4.63   0.000     .3266676    .6358202
+                |
+          _cons |   3.054628   .4576061     7.45   0.000     2.277414    4.097082
+---------------------------------------------------------------------------------
+
+. estimates store PDCge95_contin_model6
+
+. 
+. esttab PDC_contin_model6 ///
+>         using c:\3ie\analysis\GEE_contin_PDC_model6_avgPDC.rtf, ///
+>         stats(N) b(%8.2f) ci(%8.2f) nogaps ///
+>         title("GEE DiD effects full PDC models - 2016 patients") replace
+(output written to c:\3ie\analysis\GEE_contin_PDC_model6_avgPDC.rtf)
+
+. esttab PDCge80_contin_model6 PDCge95_contin_model6 ///
+>         using c:\3ie\analysis\GEE_contin_PDC_model6_pctPDC.rtf, ///
+>         stats(N) b(%8.2f) ci(%8.2f) eform nogaps  ///
+>         title("GEE DiD effects full PDC models - 2016 patients") replace
+(output written to c:\3ie\analysis\GEE_contin_PDC_model6_pctPDC.rtf)
+
+. 
+. log close
+      name:  <unnamed>
+       log:  c:\3ie\analysis\GEE_analysis_existing_contin.log
+  log type:  text
+ closed on:  17 Sep 2016, 07:20:48
+---------------------------------------------------------------------------------------------------------------

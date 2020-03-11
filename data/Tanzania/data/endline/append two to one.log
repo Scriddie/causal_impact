@@ -1,0 +1,578 @@
+-----------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  c:\3ie\data\endline\append two to one.log
+  log type:  text
+ opened on:  16 Sep 2016, 16:07:56
+
+. 
+. ***************************************
+. *APPEND ENDLINE DELIVERY DATES 
+. ****************************************
+. *use first batch delivery dates (separate file)
+. clear
+
+. import excel "batch1\endline-patient-delivery-batch1 deidentified.xlsx", ///
+>   sheet("endline-patient-delivery") firstrow case(lower)clear
+
+. rename patientdeliverydate patientdelivery
+
+. drop if patientdelivery==.
+(1 observation deleted)
+
+. keep baselinestudyid endlinestudyid patientdelivery
+
+. describe
+
+Contains data
+  obs:           863                          
+ vars:             3                          
+ size:        17,260                          
+-----------------------------------------------------------------------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-----------------------------------------------------------------------------------------------------------------------------------------------
+baselinestudyid str10  %10s                   Baseline Study ID
+endlinestudyid  double %10.0g                 Endline Study ID
+patientdelivery int    %td..                  Patient Delivery Date
+-----------------------------------------------------------------------------------------------------------------------------------------------
+Sorted by:  
+     Note:  dataset has changed since last saved
+
+. di _N
+863
+
+. * n=863
+. save first_batch_delivery, replace
+file first_batch_delivery.dta saved
+
+. 
+. * use second batch pt (delivery date in the pt file)
+. clear
+
+. import excel "batch2\endline-patient-batch2 deidentified.xlsx", ///
+>   sheet("endline-patient") firstrow case(lower)
+
+. drop if patientdelivery==.
+(0 observations deleted)
+
+. keep baselinestudyid endlinestudyid patientdelivery
+
+. describe
+
+Contains data
+  obs:         2,700                          
+ vars:             3                          
+ size:        56,700                          
+-----------------------------------------------------------------------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-----------------------------------------------------------------------------------------------------------------------------------------------
+baselinestudyid str11  %11s                   Baseline Study ID
+endlinestudyid  double %10.0g                 Endline Study ID
+patientdelivery int    %td..                  Patient Delivery
+-----------------------------------------------------------------------------------------------------------------------------------------------
+Sorted by:  
+     Note:  dataset has changed since last saved
+
+. di _N
+2700
+
+. * n=2700
+. append using first_batch_delivery
+
+. di _N
+3563
+
+. * n=3563
+. 
+. replace baselinestudyid="0" if baselinestudyid=="NONE"
+(666 real changes made)
+
+. destring baselinestudyid, gen(base_id)
+baselinestudyid has all characters numeric; base_id generated as double
+(5 missing values generated)
+
+. rename endlinestudyid end_id 
+
+. format end_id %16.0f
+
+. format base_id %16.0f
+
+. duplicates drop (end_id), force
+
+Duplicates in terms of end_id
+
+(28 observations deleted)
+
+. *n=28
+. sort end_id
+
+. *clean values before Aug 1 2013
+. gen double i=.
+(3535 missing values generated)
+
+. replace i=td(01aug2013)
+(3535 real changes made)
+
+. *i=19,571
+. drop i
+
+. gen it=patientdelivery
+
+. sort it
+
+. replace patientdelivery=. if it<19571
+(157 real changes made, 157 to missing)
+
+. drop it
+
+. save all_endline_delivery.dta, replace
+file all_endline_delivery.dta saved
+
+. 
+. ***********************
+. *APPEND ENDLINE PATIENT FILES
+. ***********************
+. * use first batch
+. clear
+
+. import excel "batch1\endline-patient-batch1 deidentified.xlsx", ///
+>   sheet("endline-patient") firstrow case(lower)
+
+. describe
+
+Contains data
+  obs:           932                          
+ vars:            14                          
+ size:       315,016                          
+-----------------------------------------------------------------------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-----------------------------------------------------------------------------------------------------------------------------------------------
+no              int    %10.0g                 No.
+baselinestudyid str10  %10s                   Baseline Study ID
+baselinevisit~e str28  %28s                   Baseline Visit Date
+endlinestudyid  double %10.0g                 Endline Study ID
+endlinevisitd~e double %tc..                  Endline Visit date
+datacollectorid int    %10.0g                 Data Collector ID
+facilitycode    byte   %10.0g                 Facility Code
+patienttype     str16  %16s                   Patient Type
+age             str4   %9s                    Age
+maritalstatus   str4   %9s                    Marital Status
+referredfrom    str5   %9s                    Referred From
+datestartart    int    %td                    Date Start ART
+whostageatstart str4   %9s                    WHO Stage At Start
+datacollector~s str244 %244s                  Data Collectors Comments
+-----------------------------------------------------------------------------------------------------------------------------------------------
+Sorted by:  
+     Note:  dataset has changed since last saved
+
+. di _N
+932
+
+. *n=932
+. gen visittype="Endline-first batch"
+
+. save first_batch_pt, replace
+file first_batch_pt.dta saved
+
+. * use second batch
+. clear
+
+. import excel "batch2\endline-patient-batch2 deidentified.xlsx", ///
+>   sheet("endline-patient") firstrow case(lower)
+
+. drop patientdelivery
+
+. gen visittype="Endline-second batch"
+
+. describe
+
+Contains data
+  obs:         2,700                          
+ vars:            15                          
+ size:       974,700                          
+-----------------------------------------------------------------------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-----------------------------------------------------------------------------------------------------------------------------------------------
+no              int    %10.0g                 No.
+baselinestudyid str11  %11s                   Baseline Study ID
+baselinevisit~e str28  %28s                   Baseline Visit Date
+endlinestudyid  double %10.0g                 Endline Study ID
+endlinevisitd~e double %tc..                  Endline Visit date
+datacollectorid byte   %10.0g                 Data Collector ID
+facilitycode    byte   %10.0g                 Facility Code
+patienttype     str16  %16s                   Patient Type
+age             str4   %9s                    Age
+maritalstatus   str7   %9s                    Marital Status
+referredfrom    str5   %9s                    Referred From
+datestartart    int    %td                    Date Start ART
+whostageatstart str4   %9s                    WHO Stage At Start
+datacollector~s str244 %244s                  Data Collectors Comments
+visittype       str20  %20s                   
+-----------------------------------------------------------------------------------------------------------------------------------------------
+Sorted by:  
+     Note:  dataset has changed since last saved
+
+. di _N
+2700
+
+. * n=2700
+. 
+. *append
+. append using first_batch_pt
+datacollectorid was byte now int
+
+. di _N
+3632
+
+. tab visittype, m
+
+           visittype |      Freq.     Percent        Cum.
+---------------------+-----------------------------------
+ Endline-first batch |        932       25.66       25.66
+Endline-second batch |      2,700       74.34      100.00
+---------------------+-----------------------------------
+               Total |      3,632      100.00
+
+. 
+. * define start of intervention
+. gen double i=. 
+(3632 missing values generated)
+
+. replace i=td(24jul2015)
+(3632 real changes made)
+
+. list  i in  1/1
+
+     +-------+
+     |     i |
+     |-------|
+  1. | 20293 |
+     +-------+
+
+. *date=20293 |
+. gen double start= 20293
+
+. format start %td
+
+. 
+.  * define end of intervention
+. gen end=dofc(endlinevisitdate)
+
+. replace i=td(01jan2012)
+(3632 real changes made)
+
+. list  i in  1/1
+
+     +-------+
+     |     i |
+     |-------|
+  1. | 18993 |
+     +-------+
+
+. *18 data collection dates are 01jan2012 in the first batch 
+. *replace them with most probable date of data collection
+. * date=18993 
+. 
+. replace i=td(09apr2016)
+(3632 real changes made)
+
+. list  i in  1/1
+
+     +-------+
+     |     i |
+     |-------|
+  1. | 20553 |
+     +-------+
+
+. *date=20553 |
+. replace end=20553 if end==18993
+(18 real changes made)
+
+. format end %td
+
+. tab visittype end, m
+
+                     |                                                end
+           visittype | 31mar2016  04apr2016  05apr2016  06apr2016  07apr2016  08apr2016  09apr2016  10apr2016  11apr2016 |     Total
+---------------------+---------------------------------------------------------------------------------------------------+----------
+ Endline-first batch |         2         28        161        183        138        252        168          0          0 |       932 
+Endline-second batch |         0          0          0          0          0          0          0         21        228 |     2,700 
+---------------------+---------------------------------------------------------------------------------------------------+----------
+               Total |         2         28        161        183        138        252        168         21        228 |     3,632 
+
+
+                     |                                                end
+           visittype | 12apr2016  13apr2016  14apr2016  15apr2016  16apr2016  17apr2016  18apr2016  19apr2016  20apr2016 |     Total
+---------------------+---------------------------------------------------------------------------------------------------+----------
+ Endline-first batch |         0          0          0          0          0          0          0          0          0 |       932 
+Endline-second batch |       165        273        202        298        146         49        169        261        191 |     2,700 
+---------------------+---------------------------------------------------------------------------------------------------+----------
+               Total |       165        273        202        298        146         49        169        261        191 |     3,632 
+
+
+                     |               end
+           visittype | 21apr2016  22apr2016  23apr2016 |     Total
+---------------------+---------------------------------+----------
+ Endline-first batch |         0          0          0 |       932 
+Endline-second batch |       303        235        159 |     2,700 
+---------------------+---------------------------------+----------
+               Total |       303        235        159 |     3,632 
+
+
+. 
+. replace baselinestudyid="0" if baselinestudyid=="NONE"
+(677 real changes made)
+
+. destring baselinestudyid, gen(base_id)
+baselinestudyid has all characters numeric; base_id generated as double
+(5 missing values generated)
+
+. rename endlinestudyid end_id 
+
+. format end_id %16.0f
+
+. format base_id %16.0f
+
+. duplicates drop
+
+Duplicates in terms of all variables
+
+(0 observations are duplicates)
+
+. sort end_id
+
+. merge m:1 end_id using all_endline_delivery.dta, keepusing(patientdelivery)
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                            99
+        from master                        86  (_merge==1)
+        from using                         13  (_merge==2)
+
+    matched                             3,546  (_merge==3)
+    -----------------------------------------
+
+. *drop delivery dates without pt
+. drop if _merge == 2
+(13 observations deleted)
+
+. drop _merge no i
+
+. 
+. * add facility variables
+. rename facilitycode fac_id
+
+. rename datacollectorid coll_id
+
+. merge m:1 fac_id using "3ie_fac.dta"
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                             0
+    matched                             3,632  (_merge==3)
+    -----------------------------------------
+
+. drop _merge
+
+. 
+. * drop duplicates
+. duplicates drop (base_id end_id fac_id), force 
+
+Duplicates in terms of base_id end_id fac_id
+
+(19 observations deleted)
+
+. duplicates tag (end_id), gen (tag)
+
+Duplicates in terms of end_id
+
+. tab tag
+
+        tag |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |      3,601       99.67       99.67
+          1 |         12        0.33      100.00
+------------+-----------------------------------
+      Total |      3,613      100.00
+
+. list  base_id end_id fac_id coll_id datestartart if tag==1
+
+      +--------------------------------------------------------+
+      |    base_id       end_id   fac_id   coll_id   datesta~t |
+      |--------------------------------------------------------|
+1951. |          0   1201676604       12         4   06aug2014 |
+1975. | 1200606612   1200606609       12         9   12aug2014 |
+1979. | 1201676614   1201676604       12         4   06aug2014 |
+1998. |          0   1200606609       12         9   12aug2014 |
+2168. |          0   1300615010       13        10   11nov2014 |
+      |--------------------------------------------------------|
+2242. | 1300615022   1300615010       13        10   11nov2014 |
+2427. | 1400089822   1400089802       14         2   11nov2014 |
+2433. |          0   1400089802       14         2   11nov2014 |
+2707. |          0   1700305710       17        10   30oct2014 |
+2743. | 1700305723   1700305710       17        10   30oct2014 |
+      |--------------------------------------------------------|
+3263. | 2200000221   2200000204       22         4   17mar2014 |
+3297. |          0   2200000204       22         4   23jan2014 |
+      +--------------------------------------------------------+
+
+. *6 duplicates new/exist; keep them and see later if the exist merge with baseline
+. drop tag
+
+. label var patienttype "differentiates existing from new pts"
+
+. label var visittype "differentiates baseline and two endline batches"
+
+. label var start "July 24th, 2015 (start of intervention)"
+
+. label var end "end of data collection (uses original endlinevisitdate)" 
+
+. drop baselinevisitdate endlinevisitdate baselinestudyid
+
+. order start end  group district facilityname patienttype visittype fac_id coll_id base_id end_id  datestartart patientdelivery
+
+. describe
+
+Contains data
+  obs:         3,613                          
+ vars:            18                          
+ size:     1,416,296                          
+-----------------------------------------------------------------------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-----------------------------------------------------------------------------------------------------------------------------------------------
+start           double %td                    July 24th, 2015 (start of intervention)
+end             float  %td                    end of data collection (uses original endlinevisitdate)
+group           str12  %12s                   Group
+district        str18  %18s                   District
+facilityname    str27  %27s                   Facility name
+patienttype     str16  %16s                   differentiates existing from new pts
+visittype       str20  %20s                   differentiates baseline and two endline batches
+fac_id          byte   %10.0g                 Facility Code
+coll_id         int    %10.0g                 Data Collector ID
+base_id         double %16.0f                 Baseline Study ID
+end_id          double %16.0f                 Endline Study ID
+datestartart    int    %td                    Date Start ART
+patientdelivery int    %td..                  Patient Delivery
+age             str4   %9s                    Age
+maritalstatus   str7   %9s                    Marital Status
+referredfrom    str5   %9s                    Referred From
+whostageatstart str4   %9s                    WHO Stage At Start
+datacollector~s str244 %244s                  Data Collectors Comments
+-----------------------------------------------------------------------------------------------------------------------------------------------
+Sorted by:  
+     Note:  dataset has changed since last saved
+
+. di _N
+3613
+
+. *n=3613
+. save all_endline_pts.dta, replace
+file all_endline_pts.dta saved
+
+. 
+. ***********************
+. *APPEND ENDLINE VISIT FILES
+. ***********************
+. *use first batch visits
+. clear  
+
+. import excel "batch1\endline-patient-visit-batch1 deidentified.xlsx", ///
+>  sheet("endline-patient-visit") firstrow case(lower)
+
+. describe
+
+Contains data
+  obs:         7,357                          
+ vars:             7                          
+ size:       132,426                          
+-----------------------------------------------------------------------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-----------------------------------------------------------------------------------------------------------------------------------------------
+no              int    %10.0g                 NO.
+endlinestudyid  double %10.0g                 Endline Study ID
+visitdate       int    %td..                  Visit Date
+nextvisitdate   int    %td..                  Next Visit Date
+arvregimen      str2   %9s                    ARV Regimen
+arvdaysdispen~d byte   %10.0g                 ARV Days Dispensed
+arvadheherence  str1   %9s                    ARV Adheherence
+-----------------------------------------------------------------------------------------------------------------------------------------------
+Sorted by:  
+     Note:  dataset has changed since last saved
+
+. di _N
+7357
+
+. *n=7357
+. save first_batch_visits, replace
+(note: file first_batch_visits.dta not found)
+file first_batch_visits.dta saved
+
+. clear
+
+. import excel "batch2\endline-patient-visit-batch2 deidentified.xlsx", ///
+>  sheet("endline-patient-visit") firstrow case(lower)
+
+. describe
+
+Contains data
+  obs:        21,508                          
+ vars:             7                          
+ size:       430,160                          
+-----------------------------------------------------------------------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-----------------------------------------------------------------------------------------------------------------------------------------------
+no              int    %10.0g                 NO.
+endlinestudyid  double %10.0g                 Endline Study ID
+visitdate       long   %td..                  Visit Date
+nextvisitdate   int    %td..                  Next Visit Date
+arvregimen      str2   %9s                    ARV Regimen
+arvdaysdispen~d byte   %10.0g                 ARV Days Dispensed
+arvadheherence  str1   %9s                    ARV Adheherence
+-----------------------------------------------------------------------------------------------------------------------------------------------
+Sorted by:  
+     Note:  dataset has changed since last saved
+
+. di _N
+21508
+
+. *n=21,508
+. append using first_batch_visits
+
+. di _N
+28865
+
+. *n=28865
+. rename endlinestudyid end_id 
+
+. format end_id %16.0f
+
+. drop no
+
+. duplicates drop (end_id visitdate nextvisitdate), force
+
+Duplicates in terms of end_id visitdate nextvisitdate
+
+(114 observations deleted)
+
+. save all_endline_visits.dta, replace
+file all_endline_visits.dta saved
+
+. *erase temp files 
+. erase first_batch_delivery.dta
+
+. erase first_batch_pt.dta
+
+. erase first_batch_visits.dta
+
+. log close
+      name:  <unnamed>
+       log:  c:\3ie\data\endline\append two to one.log
+  log type:  text
+ closed on:  16 Sep 2016, 16:08:16
+-----------------------------------------------------------------------------------------------------------------------------------------------

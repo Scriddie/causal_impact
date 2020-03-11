@@ -1,0 +1,1135 @@
+-----------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  c:\3ie\analysis\Survival_new_pts.log
+  log type:  text
+ opened on:  16 Sep 2016, 17:26:47
+
+. 
+. *********************************************************************************
+. * conduct survival analyses
+. *********************************************************************************
+. use "data\new pts\3ie_new_vis.dta", clear
+
+. 
+. * 1-day miss
+. stset censor1_180 , failure(miss1_180)
+
+     failure event:  miss1_180 != 0 & miss1_180 < .
+obs. time interval:  (0, censor1_180]
+ exit on or before:  failure
+
+------------------------------------------------------------------------------
+     3602  total obs.
+        0  exclusions
+------------------------------------------------------------------------------
+     3602  obs. remaining, representing
+     2694  failures in single record/single failure data
+   321871  total analysis time at risk, at risk from t =         0
+                             earliest observed entry t =         0
+                                  last observed exit t =       180
+
+. stsum, by(pre_post group)
+
+         failure _d:  miss1_180
+   analysis time _t:  censor1_180
+
+pre_post |               incidence       no. of    |------ Survival time -----|
+group    | time at risk     rate        subjects        25%       50%       75%
+---------+---------------------------------------------------------------------
+     Pre |
+ Control |        55478   .0096615           643         31        60       146
+     Pre |
+Interven |        60370   .0100712           732         30        59       135
+    Post |
+ Control |        75020   .0081578           884         29        60         .
+    Post |
+Interven |        93427   .0068824           986         32        92         .
+---------+---------------------------------------------------------------------
+   total |       284295   .0084384          3245         30        62       176
+
+. sts list, by(pre_post group) compare
+
+         failure _d:  miss1_180
+   analysis time _t:  censor1_180
+
+                 -----------Survivor Function-----------
+pre_post            Pre        Pre       Post       Post
+group           Control  Intervent    Control  Intervent
+--------------------------------------------------------
+time       2     1.0000     1.0000     0.9932     1.0000
+          24     0.9798     0.9836     0.9774     0.9777
+          46     0.6905     0.6530     0.6448     0.7353
+          68     0.4615     0.4458     0.4772     0.5574
+          90     0.3919     0.3663     0.3723     0.5157
+         112     0.3287     0.3218     0.3525     0.4586
+         134     0.2623     0.2600     0.3251     0.3752
+         156     0.2149     0.1724     0.3045     0.3241
+         178     0.1550     0.1724     0.3045     0.3104
+         200          .          .          .          .
+--------------------------------------------------------
+
+. sts test group if pre_post==0
+
+         failure _d:  miss1_180
+   analysis time _t:  censor1_180
+
+
+Log-rank test for equality of survivor functions
+
+             |   Events         Events
+group        |  observed       expected
+-------------+-------------------------
+Control      |       536         547.23
+Intervention |       608         596.77
+-------------+-------------------------
+Total        |      1144        1144.00
+
+                   chi2(1) =       0.46
+                   Pr>chi2 =     0.4957
+
+. sts test group if pre_post==1
+
+         failure _d:  miss1_180
+   analysis time _t:  censor1_180
+
+
+Log-rank test for equality of survivor functions
+
+             |   Events         Events
+group        |  observed       expected
+-------------+-------------------------
+Control      |       612         554.15
+Intervention |       643         700.85
+-------------+-------------------------
+Total        |      1255        1255.00
+
+                   chi2(1) =      11.26
+                   Pr>chi2 =     0.0008
+
+. #d ;
+delimiter now ;
+. sts graph if pre_post==0, title("Time until missed visits among newly treated patients")
+>                 subtitle ("Pre-intervention period")    xtitle("Days of follow-up")  ytitle("Proportion without missed visit")
+>                 ylabel (1 "100%" .75 "75%" .5 "50%" .25 "25%" 0 "0%",angle(horizontal)) by(group)
+>                 xlabel (0 30 60 90 120 150 180) xsize(2.97) ysize(2) scale(1.0) 
+>                 saving(c:\3ie\analysis\new_pre_bygroup_1day, replace);
+
+         failure _d:  miss1_180
+   analysis time _t:  censor1_180
+(file c:\3ie\analysis\new_pre_bygroup_1day.gph saved)
+
+. #d cr           
+delimiter now cr
+. #d ;
+delimiter now ;
+. sts graph if pre_post==1, title("Time until missed visits among newly treated patients")
+>                 subtitle ("Post-intervention period")   xtitle("Days of follow-up")  ytitle("Proportion without missed visit")
+>                 ylabel (1 "100%" .75 "75%" .5 "50%" .25 "25%" 0 "0%",angle(horizontal)) by(group)
+>                 xlabel (0 30 60 90 120 150 180) xsize(2.97) ysize(2) scale(1.0) 
+>                 saving(c:\3ie\analysis\new_post_bygroup_1day, replace);
+
+         failure _d:  miss1_180
+   analysis time _t:  censor1_180
+(file c:\3ie\analysis\new_post_bygroup_1day.gph saved)
+
+. #d cr           
+delimiter now cr
+. stcox interv i.age_cat i.who_stage i.post_delivery if pre_post==0, hr
+
+         failure _d:  miss1_180
+   analysis time _t:  censor1_180
+
+Iteration 0:   log likelihood = -7535.8365
+Iteration 1:   log likelihood = -7508.5888
+Iteration 2:   log likelihood = -7508.2309
+Iteration 3:   log likelihood = -7508.2307
+Iteration 4:   log likelihood = -7508.2307
+Refining estimates:
+Iteration 0:   log likelihood = -7508.2307
+
+Cox regression -- Breslow method for ties
+
+No. of subjects =         1375                     Number of obs   =      1375
+No. of failures =         1144
+Time at risk    =       115848
+                                                   LR chi2(7)      =     55.21
+Log likelihood  =   -7508.2307                     Prob > chi2     =    0.0000
+
+-------------------------------------------------------------------------------
+           _t | Haz. Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+--------------+----------------------------------------------------------------
+       interv |    1.06689   .0649445     1.06   0.287     .9469013    1.202084
+              |
+      age_cat |
+           3  |   1.548331   .1456262     4.65   0.000     1.287672    1.861755
+           4  |   1.852936    .186375     6.13   0.000     1.521401    2.256719
+           5  |   1.014807    .425166     0.04   0.972     .4464388    2.306773
+              |
+    who_stage |
+           2  |   .9308353   .1042591    -0.64   0.522     .7473657    1.159344
+           3  |   1.190983   .1315264     1.58   0.114     .9591863    1.478796
+              |
+1.post_deli~y |   1.204151   .0731417     3.06   0.002     1.069001    1.356388
+-------------------------------------------------------------------------------
+
+. estimates store cox_miss_pre
+
+. stcox interv i.age_cat i.who_stage i.post_delivery if pre_post==1, hr
+
+         failure _d:  miss1_180
+   analysis time _t:  censor1_180
+
+Iteration 0:   log likelihood = -8854.9358
+Iteration 1:   log likelihood = -8835.6834
+Iteration 2:   log likelihood = -8833.5923
+Iteration 3:   log likelihood = -8833.5401
+Iteration 4:   log likelihood = -8833.5401
+Refining estimates:
+Iteration 0:   log likelihood = -8833.5401
+
+Cox regression -- Breslow method for ties
+
+No. of subjects =         1870                     Number of obs   =      1870
+No. of failures =         1255
+Time at risk    =       168447
+                                                   LR chi2(8)      =     42.79
+Log likelihood  =   -8833.5401                     Prob > chi2     =    0.0000
+
+-------------------------------------------------------------------------------
+           _t | Haz. Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+--------------+----------------------------------------------------------------
+       interv |   .8419713   .0481871    -3.01   0.003     .7526307     .941917
+              |
+      age_cat |
+           3  |   .8398173   .0748112    -1.96   0.050     .7052766    1.000023
+           4  |   .8594864   .0865669    -1.50   0.133     .7055155     1.04706
+           5  |   1.782851   .5414635     1.90   0.057     .9831039    3.233184
+              |
+    who_stage |
+           2  |   1.332412   .1127212     3.39   0.001     1.128827    1.572713
+           3  |   1.526377    .218271     2.96   0.003     1.153295    2.020148
+           4  |   2.274824   .8667338     2.16   0.031     1.078029    4.800265
+              |
+1.post_deli~y |     1.1115   .0644468     1.82   0.068     .9921001    1.245271
+-------------------------------------------------------------------------------
+
+. estimates store cox_miss_post
+
+. 
+. * test PH assumption
+. /*
+> sts gen cumhg = na, by(pre_post group)
+> gen lch = log(cumhg)
+> separate lch if pre_post==0, by(group)
+> twoway connect lch1 lch2 _t, ytitle("log(cumulative hazard)") ///
+>         title("Proportional hazard check surival pre") ///
+>         xtitle("survival time") xtick(1(1)39) sort saving(PHtest3, replace)
+> drop lch1 lch2
+> separate lch if pre_post==1, by(group)
+> twoway connect lch1 lch2 _t, ytitle("log(cumulative hazard)") ///
+>         title("Proportional hazard check surival pre_post") ///
+>         xtitle("survival time") xtick(1(1)39) sort saving(PHtest3, replace)
+> drop cumhg lch lch1 lch2
+> */
+.         
+. * 3-day miss
+. stset censor3_180 , failure(miss3_180)
+
+     failure event:  miss3_180 != 0 & miss3_180 < .
+obs. time interval:  (0, censor3_180]
+ exit on or before:  failure
+
+------------------------------------------------------------------------------
+     3602  total obs.
+        0  exclusions
+------------------------------------------------------------------------------
+     3602  obs. remaining, representing
+     2119  failures in single record/single failure data
+   394615  total analysis time at risk, at risk from t =         0
+                             earliest observed entry t =         0
+                                  last observed exit t =       180
+
+. stsum, by(pre_post group)
+
+         failure _d:  miss3_180
+   analysis time _t:  censor3_180
+
+pre_post |               incidence       no. of    |------ Survival time -----|
+group    | time at risk     rate        subjects        25%       50%       75%
+---------+---------------------------------------------------------------------
+     Pre |
+ Control |        65621   .0074976           643         39        90       180
+     Pre |
+Interven |        71273   .0073099           732         31        89         .
+    Post |
+ Control |        94672   .0048483           884         56       145         .
+    Post |
+Interven |       115489   .0037146           986         60         .         .
+---------+---------------------------------------------------------------------
+   total |       347055   .0054775          3245         55       120         .
+
+. sts list, by(pre_post group) compare
+
+         failure _d:  miss3_180
+   analysis time _t:  censor3_180
+
+                 -----------Survivor Function-----------
+pre_post            Pre        Pre       Post       Post
+group           Control  Intervent    Control  Intervent
+--------------------------------------------------------
+time       6     1.0000     1.0000     0.9943     1.0000
+          27     0.9689     0.9493     0.9367     0.9706
+          48     0.7325     0.6804     0.7952     0.8529
+          69     0.5667     0.5474     0.6420     0.7228
+          90     0.4989     0.4939     0.5603     0.6962
+         111     0.4578     0.4574     0.5418     0.6620
+         132     0.3805     0.3961     0.5061     0.5819
+         153     0.3426     0.2967     0.4732     0.5567
+         174     0.3201     0.2777     0.4732     0.5313
+         195          .          .          .          .
+--------------------------------------------------------
+
+. sts test group if pre_post==0
+
+         failure _d:  miss3_180
+   analysis time _t:  censor3_180
+
+
+Log-rank test for equality of survivor functions
+
+             |   Events         Events
+group        |  observed       expected
+-------------+-------------------------
+Control      |       492         485.75
+Intervention |       521         527.25
+-------------+-------------------------
+Total        |      1013        1013.00
+
+                   chi2(1) =       0.16
+                   Pr>chi2 =     0.6883
+
+. sts test group if pre_post==1
+
+         failure _d:  miss3_180
+   analysis time _t:  censor3_180
+
+
+Log-rank test for equality of survivor functions
+
+             |   Events         Events
+group        |  observed       expected
+-------------+-------------------------
+Control      |       459         400.43
+Intervention |       429         487.57
+-------------+-------------------------
+Total        |       888         888.00
+
+                   chi2(1) =      15.92
+                   Pr>chi2 =     0.0001
+
+. #d ;
+delimiter now ;
+. sts graph if pre_post==0, title("Time until 3-day missed visits among newly treated patients")
+>                 subtitle ("Pre-intervention period")    xtitle("Days of follow-up")  ytitle("Proportion without missed visit")
+>                 ylabel (1 "100%" .75 "75%" .5 "50%" .25 "25%" 0 "0%",angle(horizontal)) by(group)
+>                 xlabel (0 30 60 90 120 150 180) xsize(2.97) ysize(2) scale(1.0) 
+>                 saving(c:\3ie\analysis\new_pre_bygroup_3day, replace);
+
+         failure _d:  miss3_180
+   analysis time _t:  censor3_180
+(file c:\3ie\analysis\new_pre_bygroup_3day.gph saved)
+
+. #d cr           
+delimiter now cr
+. #d ;
+delimiter now ;
+. sts graph if pre_post==1, title("Time until 3-day missed visits among newly treated patients")
+>                 subtitle ("Post-intervention period")   xtitle("Days of follow-up")  ytitle("Proportion without missed visit")
+>                 ylabel (1 "100%" .75 "75%" .5 "50%" .25 "25%" 0 "0%",angle(horizontal)) by(group)
+>                 xlabel (0 30 60 90 120 150 180) xsize(2.97) ysize(2) scale(1.0) 
+>                 saving(c:\3ie\analysis\new_post_bygroup_3day, replace);
+
+         failure _d:  miss3_180
+   analysis time _t:  censor3_180
+(file c:\3ie\analysis\new_post_bygroup_3day.gph saved)
+
+. #d cr           
+delimiter now cr
+. stcox interv i.age_cat i.who_stage i.post_delivery if pre_post==0, hr
+
+         failure _d:  miss3_180
+   analysis time _t:  censor3_180
+
+Iteration 0:   log likelihood = -6779.3634
+Iteration 1:   log likelihood = -6766.1042
+Iteration 2:   log likelihood = -6766.0639
+Iteration 3:   log likelihood = -6766.0639
+Refining estimates:
+Iteration 0:   log likelihood = -6766.0639
+
+Cox regression -- Breslow method for ties
+
+No. of subjects =         1375                     Number of obs   =      1375
+No. of failures =         1013
+Time at risk    =       136894
+                                                   LR chi2(7)      =     26.60
+Log likelihood  =   -6766.0639                     Prob > chi2     =    0.0004
+
+-------------------------------------------------------------------------------
+           _t | Haz. Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+--------------+----------------------------------------------------------------
+       interv |   1.010834   .0652352     0.17   0.867     .8907317    1.147131
+              |
+      age_cat |
+           3  |   1.170307   .1134904     1.62   0.105     .9677312    1.415289
+           4  |   1.397289   .1452696     3.22   0.001     1.139701    1.713096
+           5  |   1.151832   .4832989     0.34   0.736     .5060949    2.621477
+              |
+    who_stage |
+           2  |   1.044024   .1214746     0.37   0.711     .8311346    1.311444
+           3  |   1.265843   .1482703     2.01   0.044     1.006183    1.592511
+              |
+1.post_deli~y |   1.252944   .0813709     3.47   0.001     1.103193    1.423022
+-------------------------------------------------------------------------------
+
+. estimates store cox_miss3_pre
+
+. stcox interv i.age_cat i.who_stage i.post_delivery if pre_post==1, hr
+
+         failure _d:  miss3_180
+   analysis time _t:  censor3_180
+
+Iteration 0:   log likelihood = -6394.1367
+Iteration 1:   log likelihood = -6368.7181
+Iteration 2:   log likelihood = -6363.8268
+Iteration 3:   log likelihood = -6363.7733
+Iteration 4:   log likelihood = -6363.7732
+Refining estimates:
+Iteration 0:   log likelihood = -6363.7732
+
+Cox regression -- Breslow method for ties
+
+No. of subjects =         1870                     Number of obs   =      1870
+No. of failures =          888
+Time at risk    =       210161
+                                                   LR chi2(8)      =     60.73
+Log likelihood  =   -6363.7732                     Prob > chi2     =    0.0000
+
+-------------------------------------------------------------------------------
+           _t | Haz. Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+--------------+----------------------------------------------------------------
+       interv |   .7899908   .0537126    -3.47   0.001     .6914291    .9026024
+              |
+      age_cat |
+           3  |   .7068709   .0706896    -3.47   0.001     .5810547    .8599303
+           4  |   .6703673   .0780283    -3.44   0.001      .533625    .8421501
+           5  |   2.367755   .7275622     2.81   0.005     1.296523    4.324077
+              |
+    who_stage |
+           2  |   1.008649   .1096205     0.08   0.937     .8151376    1.248099
+           3  |   .4945895   .1181462    -2.95   0.003     .3096793    .7899101
+           4  |   3.461268   1.323095     3.25   0.001     1.636279    7.321721
+              |
+1.post_deli~y |   1.091278   .0753083     1.27   0.206     .9532234    1.249327
+-------------------------------------------------------------------------------
+
+. estimates store cox_miss3_post
+
+. 
+. * 7-day miss
+. stset censor7_180 , failure(miss7_180)
+
+     failure event:  miss7_180 != 0 & miss7_180 < .
+obs. time interval:  (0, censor7_180]
+ exit on or before:  failure
+
+------------------------------------------------------------------------------
+     3602  total obs.
+        0  exclusions
+------------------------------------------------------------------------------
+     3602  obs. remaining, representing
+     1569  failures in single record/single failure data
+   451158  total analysis time at risk, at risk from t =         0
+                             earliest observed entry t =         0
+                                  last observed exit t =       180
+
+. stsum, by(pre_post group)
+
+         failure _d:  miss7_180
+   analysis time _t:  censor7_180
+
+pre_post |               incidence       no. of    |------ Survival time -----|
+group    | time at risk     rate        subjects        25%       50%       75%
+---------+---------------------------------------------------------------------
+     Pre |
+ Control |        74589   .0054432           643         57       120         .
+     Pre |
+Interven |        80048   .0058215           732         50       117         .
+    Post |
+ Control |       113966   .0023604           884         91         .         .
+    Post |
+Interven |       128536   .0022717           986        117         .         .
+---------+---------------------------------------------------------------------
+   total |       397139   .0036083          3245         61         .         .
+
+. sts list, by(pre_post group) compare
+
+         failure _d:  miss7_180
+   analysis time _t:  censor7_180
+
+                 -----------Survivor Function-----------
+pre_post            Pre        Pre       Post       Post
+group           Control  Intervent    Control  Intervent
+--------------------------------------------------------
+time       6     1.0000     1.0000     0.9943     1.0000
+          27     0.9689     0.9836     0.9604     0.9777
+          48     0.7838     0.7723     0.8744     0.9016
+          69     0.6482     0.6118     0.7959     0.8248
+          90     0.6009     0.5597     0.7541     0.8025
+         111     0.5599     0.5231     0.7355     0.7640
+         132     0.4858     0.4537     0.7129     0.7065
+         153     0.4574     0.3973     0.6843     0.6984
+         174     0.4350     0.3664     0.6843     0.6984
+         195          .          .          .          .
+--------------------------------------------------------
+
+. sts test group if pre_post==0
+
+         failure _d:  miss7_180
+   analysis time _t:  censor7_180
+
+
+Log-rank test for equality of survivor functions
+
+             |   Events         Events
+group        |  observed       expected
+-------------+-------------------------
+Control      |       406         419.19
+Intervention |       466         452.81
+-------------+-------------------------
+Total        |       872         872.00
+
+                   chi2(1) =       0.82
+                   Pr>chi2 =     0.3638
+
+. sts test group if pre_post==1
+
+         failure _d:  miss7_180
+   analysis time _t:  censor7_180
+
+
+Log-rank test for equality of survivor functions
+
+             |   Events         Events
+group        |  observed       expected
+-------------+-------------------------
+Control      |       269         263.02
+Intervention |       292         297.98
+-------------+-------------------------
+Total        |       561         561.00
+
+                   chi2(1) =       0.26
+                   Pr>chi2 =     0.6112
+
+. #d ;
+delimiter now ;
+. sts graph if pre_post==0, title("Time until 7-day missed visits among newly treated patients")
+>                 subtitle ("Pre-intervention period")    xtitle("Days of follow-up")  ytitle("Proportion without missed visit")
+>                 ylabel (1 "100%" .75 "75%" .5 "50%" .25 "25%" 0 "0%",angle(horizontal)) by(group)
+>                 xlabel (0 30 60 90 120 150 180) xsize(2.97) ysize(2) scale(1.0) 
+>                 saving(c:\3ie\analysis\new_pre_bygroup_7day, replace);
+
+         failure _d:  miss7_180
+   analysis time _t:  censor7_180
+(file c:\3ie\analysis\new_pre_bygroup_7day.gph saved)
+
+. #d cr           
+delimiter now cr
+. #d ;
+delimiter now ;
+. sts graph if pre_post==1, title("Time until 7-day missed visits among newly treated patients")
+>                 subtitle ("Post-intervention period")   xtitle("Days of follow-up")  ytitle("Proportion without missed visit")
+>                 ylabel (1 "100%" .75 "75%" .5 "50%" .25 "25%" 0 "0%",angle(horizontal)) by(group)
+>                 xlabel (0 30 60 90 120 150 180) xsize(2.97) ysize(2) scale(1.0) 
+>                 saving(c:\3ie\analysis\new_post_bygroup_7day, replace);
+
+         failure _d:  miss7_180
+   analysis time _t:  censor7_180
+(file c:\3ie\analysis\new_post_bygroup_7day.gph saved)
+
+. #d cr           
+delimiter now cr
+. stcox interv i.age_cat i.who_stage i.post_delivery if pre_post==0, hr
+
+         failure _d:  miss7_180
+   analysis time _t:  censor7_180
+
+Iteration 0:   log likelihood = -5926.1619
+Iteration 1:   log likelihood = -5911.7192
+Iteration 2:   log likelihood = -5911.6357
+Iteration 3:   log likelihood = -5911.6357
+Refining estimates:
+Iteration 0:   log likelihood = -5911.6357
+
+Cox regression -- Breslow method for ties
+
+No. of subjects =         1375                     Number of obs   =      1375
+No. of failures =          872
+Time at risk    =       154637
+                                                   LR chi2(7)      =     29.05
+Log likelihood  =   -5911.6357                     Prob > chi2     =    0.0001
+
+-------------------------------------------------------------------------------
+           _t | Haz. Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+--------------+----------------------------------------------------------------
+       interv |   1.124193   .0783515     1.68   0.093     .9806541    1.288743
+              |
+      age_cat |
+           3  |   1.147923   .1197665     1.32   0.186     .9356297    1.408384
+           4  |    1.11225   .1260443     0.94   0.348     .8907201    1.388877
+           5  |   1.556314   .6559135     1.05   0.294     .6813272    3.554994
+              |
+    who_stage |
+           2  |    1.02689   .1302205     0.21   0.834     .8009082    1.316635
+           3  |   1.523757   .1861988     3.45   0.001     1.199227    1.936111
+              |
+1.post_deli~y |   1.345365   .0928143     4.30   0.000     1.175215     1.54015
+-------------------------------------------------------------------------------
+
+. estimates store cox_miss7_pre
+
+. stcox interv i.age_cat i.who_stage i.post_delivery if pre_post==1, hr
+
+         failure _d:  miss7_180
+   analysis time _t:  censor7_180
+
+Iteration 0:   log likelihood = -4108.5415
+Iteration 1:   log likelihood = -4096.7294
+Iteration 2:   log likelihood = -4090.7346
+Iteration 3:   log likelihood = -4090.3823
+Iteration 4:   log likelihood = -4090.3769
+Iteration 5:   log likelihood = -4090.3769
+Refining estimates:
+Iteration 0:   log likelihood = -4090.3769
+
+Cox regression -- Breslow method for ties
+
+No. of subjects =         1870                     Number of obs   =      1870
+No. of failures =          561
+Time at risk    =       242502
+                                                   LR chi2(8)      =     36.33
+Log likelihood  =   -4090.3769                     Prob > chi2     =    0.0000
+
+-------------------------------------------------------------------------------
+           _t | Haz. Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+--------------+----------------------------------------------------------------
+       interv |   .9655418   .0824873    -0.41   0.681     .8166802    1.141537
+              |
+      age_cat |
+           3  |   .6018644   .0728159    -4.20   0.000     .4748069    .7629223
+           4  |   .7033725    .097499    -2.54   0.011      .536037    .9229453
+           5  |   1.063166   .4539594     0.14   0.886     .4604135    2.455015
+              |
+    who_stage |
+           2  |   1.126196   .1475239     0.91   0.364     .8711894    1.455846
+           3  |   .6223654   .1754052    -1.68   0.092     .3582167    1.081297
+           4  |   7.049795   2.716395     5.07   0.000     3.312801    15.00229
+              |
+1.post_deli~y |   1.076023   .0934583     0.84   0.399     .9075909    1.275713
+-------------------------------------------------------------------------------
+
+. estimates store cox_miss7_post
+
+. 
+. * 15-day miss
+. stset censor15_180 , failure(miss15_180)
+
+     failure event:  miss15_180 != 0 & miss15_180 < .
+obs. time interval:  (0, censor15_180]
+ exit on or before:  failure
+
+------------------------------------------------------------------------------
+     3602  total obs.
+        0  exclusions
+------------------------------------------------------------------------------
+     3602  obs. remaining, representing
+     1295  failures in single record/single failure data
+   480571  total analysis time at risk, at risk from t =         0
+                             earliest observed entry t =         0
+                                  last observed exit t =       180
+
+. stsum, by(pre_post group)
+
+         failure _d:  miss15_180
+   analysis time _t:  censor15_180
+
+pre_post |               incidence       no. of    |------ Survival time -----|
+group    | time at risk     rate        subjects        25%       50%       75%
+---------+---------------------------------------------------------------------
+     Pre |
+ Control |        80845   .0043911           643         62       176         .
+     Pre |
+Interven |        87371   .0048529           732         58       149         .
+    Post |
+ Control |       120841   .0015971           884          .         .         .
+    Post |
+Interven |       135837    .001465           986          .         .         .
+---------+---------------------------------------------------------------------
+   total |       424894    .002756          3245         91         .         .
+
+. sts list, by(pre_post group) compare
+
+         failure _d:  miss15_180
+   analysis time _t:  censor15_180
+
+                 -----------Survivor Function-----------
+pre_post            Pre        Pre       Post       Post
+group           Control  Intervent    Control  Intervent
+--------------------------------------------------------
+time       6     1.0000     1.0000     0.9943     1.0000
+          27     0.9720     0.9904     0.9706     0.9848
+          48     0.8351     0.8340     0.9231     0.9138
+          69     0.7091     0.6859     0.8547     0.8667
+          90     0.6618     0.6255     0.7998     0.8603
+         111     0.6287     0.5891     0.7998     0.8345
+         132     0.5547     0.5128     0.7847     0.8029
+         153     0.5263     0.4766     0.7755     0.7948
+         174     0.5150     0.4352     0.7755     0.7866
+         195          .          .          .          .
+--------------------------------------------------------
+
+. sts test group if pre_post==0
+
+         failure _d:  miss15_180
+   analysis time _t:  censor15_180
+
+
+Log-rank test for equality of survivor functions
+
+             |   Events         Events
+group        |  observed       expected
+-------------+-------------------------
+Control      |       355         374.86
+Intervention |       424         404.14
+-------------+-------------------------
+Total        |       779         779.00
+
+                   chi2(1) =       2.08
+                   Pr>chi2 =     0.1497
+
+. sts test group if pre_post==1
+
+         failure _d:  miss15_180
+   analysis time _t:  censor15_180
+
+
+Log-rank test for equality of survivor functions
+
+             |   Events         Events
+group        |  observed       expected
+-------------+-------------------------
+Control      |       193         184.59
+Intervention |       199         207.41
+-------------+-------------------------
+Total        |       392         392.00
+
+                   chi2(1) =       0.73
+                   Pr>chi2 =     0.3929
+
+. #d ;
+delimiter now ;
+. sts graph if pre_post==0, title("Time until 15-day missed visits among newly treated patients")
+>                 subtitle ("Pre-intervention period")    xtitle("Days of follow-up")  ytitle("Proportion without missed visit")
+>                 ylabel (1 "100%" .75 "75%" .5 "50%" .25 "25%" 0 "0%",angle(horizontal)) by(group)
+>                 xlabel (0 30 60 90 120 150 180) xsize(2.97) ysize(2) scale(1.0) 
+>                 saving(c:\3ie\analysis\new_pre_bygroup_15day, replace);
+
+         failure _d:  miss15_180
+   analysis time _t:  censor15_180
+(file c:\3ie\analysis\new_pre_bygroup_15day.gph saved)
+
+. #d cr           
+delimiter now cr
+. #d ;
+delimiter now ;
+. sts graph if pre_post==1, title("Time until 15-day missed visits among newly treated patients")
+>                 subtitle ("Post-intervention period")   xtitle("Days of follow-up")  ytitle("Proportion without missed visit")
+>                 ylabel (1 "100%" .75 "75%" .5 "50%" .25 "25%" 0 "0%",angle(horizontal)) by(group)
+>                 xlabel (0 30 60 90 120 150 180) xsize(2.97) ysize(2) scale(1.0) 
+>                 saving(c:\3ie\analysis\new_post_bygroup_15day, replace);
+
+         failure _d:  miss15_180
+   analysis time _t:  censor15_180
+(file c:\3ie\analysis\new_post_bygroup_15day.gph saved)
+
+. #d cr           
+delimiter now cr
+. stcox interv i.age_cat i.who_stage i.post_delivery if pre_post==0, hr
+
+         failure _d:  miss15_180
+   analysis time _t:  censor15_180
+
+Iteration 0:   log likelihood = -5337.2216
+Iteration 1:   log likelihood = -5314.8651
+Iteration 2:   log likelihood = -5314.3437
+Iteration 3:   log likelihood = -5314.3428
+Refining estimates:
+Iteration 0:   log likelihood = -5314.3428
+
+Cox regression -- Breslow method for ties
+
+No. of subjects =         1375                     Number of obs   =      1375
+No. of failures =          779
+Time at risk    =       168216
+                                                   LR chi2(7)      =     45.76
+Log likelihood  =   -5314.3428                     Prob > chi2     =    0.0000
+
+-------------------------------------------------------------------------------
+           _t | Haz. Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+--------------+----------------------------------------------------------------
+       interv |   1.196636   .0877954     2.45   0.014      1.03636    1.381699
+              |
+      age_cat |
+           3  |   1.027538   .1090515     0.26   0.798     .8345661    1.265129
+           4  |   .9332163   .1087179    -0.59   0.553     .7427096    1.172588
+           5  |   1.803693   .7616225     1.40   0.162     .7883814    4.126565
+              |
+    who_stage |
+           2  |   .8863566   .1228374    -0.87   0.384     .6755277    1.162984
+           3  |   1.904274   .2348401     5.22   0.000     1.495398    2.424945
+              |
+1.post_deli~y |   1.413082    .103243     4.73   0.000      1.22455     1.63064
+-------------------------------------------------------------------------------
+
+. estimates store cox_miss15_pre
+
+. stcox interv i.age_cat i.who_stage i.post_delivery if pre_post==1, hr
+
+         failure _d:  miss15_180
+   analysis time _t:  censor15_180
+
+Iteration 0:   log likelihood = -2894.9499
+Iteration 1:   log likelihood = -2888.0763
+Iteration 2:   log likelihood = -2873.2406
+Iteration 3:   log likelihood = -2871.5572
+Iteration 4:   log likelihood = -2871.4684
+Iteration 5:   log likelihood = -2871.4679
+Refining estimates:
+Iteration 0:   log likelihood = -2871.4679
+
+Cox regression -- Breslow method for ties
+
+No. of subjects =         1870                     Number of obs   =      1870
+No. of failures =          392
+Time at risk    =       256678
+                                                   LR chi2(8)      =     46.96
+Log likelihood  =   -2871.4679                     Prob > chi2     =    0.0000
+
+-------------------------------------------------------------------------------
+           _t | Haz. Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+--------------+----------------------------------------------------------------
+       interv |   .9339137   .0959811    -0.67   0.506     .7635302    1.142319
+              |
+      age_cat |
+           3  |   1.049895   .1783789     0.29   0.774     .7525325     1.46476
+           4  |   1.567226   .2866516     2.46   0.014     1.095074     2.24295
+           5  |   2.417556   1.071543     1.99   0.046     1.014133    5.763123
+              |
+    who_stage |
+           2  |   .5710979   .1107003    -2.89   0.004      .390585    .8350366
+           3  |    .509132   .1825213    -1.88   0.060     .2521615    1.027974
+           4  |   8.834112    3.43182     5.61   0.000     4.125661    18.91613
+              |
+1.post_deli~y |   1.127311   .1170935     1.15   0.249     .9196655    1.381841
+-------------------------------------------------------------------------------
+
+. estimates store cox_miss15_post
+
+. 
+. * 60-day miss
+. stset censor60_180 , failure(miss60_180)
+
+     failure event:  miss60_180 != 0 & miss60_180 < .
+obs. time interval:  (0, censor60_180]
+ exit on or before:  failure
+
+------------------------------------------------------------------------------
+     3602  total obs.
+        0  exclusions
+------------------------------------------------------------------------------
+     3602  obs. remaining, representing
+      413  failures in single record/single failure data
+   572120  total analysis time at risk, at risk from t =         0
+                             earliest observed entry t =         0
+                                  last observed exit t =       180
+
+. stsum, by(pre_post group)
+
+         failure _d:  miss60_180
+   analysis time _t:  censor60_180
+
+pre_post |               incidence       no. of    |------ Survival time -----|
+group    | time at risk     rate        subjects        25%       50%       75%
+---------+---------------------------------------------------------------------
+     Pre |
+ Control |       100671   .0017185           643        180         .         .
+     Pre |
+Interven |       117190   .0012885           732          .         .         .
+    Post |
+ Control |       138002   .0002754           884          .         .         .
+    Post |
+Interven |       152456   .0003148           986          .         .         .
+---------+---------------------------------------------------------------------
+   total |       508319   .0008066          3245          .         .         .
+
+. sts list, by(pre_post group) compare
+
+         failure _d:  miss60_180
+   analysis time _t:  censor60_180
+
+                 -----------Survivor Function-----------
+pre_post            Pre        Pre       Post       Post
+group           Control  Intervent    Control  Intervent
+--------------------------------------------------------
+time      24     1.0000     1.0000     1.0000     1.0000
+          43     0.9347     0.9328     0.9898     0.9817
+          62     0.9095     0.9108     0.9830     0.9715
+          81     0.8812     0.9108     0.9830     0.9715
+         100     0.8418     0.8956     0.9702     0.9715
+         119     0.8230     0.8956     0.9641     0.9604
+         138     0.8167     0.8872     0.9641     0.9604
+         157     0.8167     0.8505     0.9641     0.9525
+         176     0.7861     0.8296     0.9641     0.9443
+         195          .          .          .          .
+--------------------------------------------------------
+
+. sts test group if pre_post==0
+
+         failure _d:  miss60_180
+   analysis time _t:  censor60_180
+
+
+Log-rank test for equality of survivor functions
+
+             |   Events         Events
+group        |  observed       expected
+-------------+-------------------------
+Control      |       173         150.38
+Intervention |       151         173.62
+-------------+-------------------------
+Total        |       324         324.00
+
+                   chi2(1) =       6.46
+                   Pr>chi2 =     0.0110
+
+. sts test group if pre_post==1
+
+         failure _d:  miss60_180
+   analysis time _t:  censor60_180
+
+
+Log-rank test for equality of survivor functions
+
+             |   Events         Events
+group        |  observed       expected
+-------------+-------------------------
+Control      |        38          41.07
+Intervention |        48          44.93
+-------------+-------------------------
+Total        |        86          86.00
+
+                   chi2(1) =       0.44
+                   Pr>chi2 =     0.5072
+
+. #d ;
+delimiter now ;
+. sts graph if pre_post==0, title("Time until 60-day missed visits among newly treated patients")
+>                 subtitle ("Pre-intervention period")    xtitle("Days of follow-up")  ytitle("Proportion without missed visit")
+>                 ylabel (1 "100%" .75 "75%" .5 "50%" .25 "25%" 0 "0%",angle(horizontal)) by(group)
+>                 xlabel (0 30 60 90 120 150 180) xsize(2.97) ysize(2) scale(1.0) 
+>                 saving(c:\3ie\analysis\new_pre_bygroup_60day, replace);
+
+         failure _d:  miss60_180
+   analysis time _t:  censor60_180
+(file c:\3ie\analysis\new_pre_bygroup_60day.gph saved)
+
+. #d cr           
+delimiter now cr
+. #d ;
+delimiter now ;
+. sts graph if pre_post==1, title("Time until 60-day missed visits among newly treated patients")
+>                 subtitle ("Post-intervention period")   xtitle("Days of follow-up")  ytitle("Proportion without missed visit")
+>                 ylabel (1 "100%" .75 "75%" .5 "50%" .25 "25%" 0 "0%",angle(horizontal)) by(group)
+>                 xlabel (0 30 60 90 120 150 180) xsize(2.97) ysize(2) scale(1.0) 
+>                 saving(c:\3ie\analysis\new_post_bygroup_60day, replace);
+
+         failure _d:  miss60_180
+   analysis time _t:  censor60_180
+(file c:\3ie\analysis\new_post_bygroup_60day.gph saved)
+
+. #d cr           
+delimiter now cr
+. stcox interv i.age_cat i.who_stage i.post_delivery if pre_post==0, hr
+
+         failure _d:  miss60_180
+   analysis time _t:  censor60_180
+
+Iteration 0:   log likelihood = -2290.2238
+Iteration 1:   log likelihood = -2262.8311
+Iteration 2:   log likelihood = -2261.3123
+Iteration 3:   log likelihood = -2261.2095
+Iteration 4:   log likelihood = -2261.1733
+Iteration 5:   log likelihood =   -2261.16
+Iteration 6:   log likelihood = -2261.1551
+Iteration 7:   log likelihood = -2261.1533
+Iteration 8:   log likelihood = -2261.1526
+Iteration 9:   log likelihood = -2261.1524
+Iteration 10:  log likelihood = -2261.1523
+Iteration 11:  log likelihood = -2261.1522
+Iteration 12:  log likelihood = -2261.1522
+Iteration 13:  log likelihood = -2261.1522
+Iteration 14:  log likelihood = -2261.1522
+Iteration 15:  log likelihood = -2261.1522
+Iteration 16:  log likelihood = -2261.1522
+Iteration 17:  log likelihood = -2261.1522
+Iteration 18:  log likelihood = -2261.1522
+Iteration 19:  log likelihood = -2261.1522
+Iteration 20:  log likelihood = -2261.1522
+Iteration 21:  log likelihood = -2261.1522
+Iteration 22:  log likelihood = -2261.1522
+Iteration 23:  log likelihood = -2261.1522
+Iteration 24:  log likelihood = -2261.1522
+Iteration 25:  log likelihood = -2261.1522
+Iteration 26:  log likelihood = -2261.1522
+Iteration 27:  log likelihood = -2261.1522
+Iteration 28:  log likelihood = -2261.1522
+Refining estimates:
+Iteration 0:   log likelihood = -2261.1522
+Iteration 1:   log likelihood = -2261.1522
+Iteration 2:   log likelihood = -2261.1522
+Iteration 3:   log likelihood = -2261.1522
+
+Cox regression -- Breslow method for ties
+
+No. of subjects =         1375                     Number of obs   =      1375
+No. of failures =          324
+Time at risk    =       217861
+                                                   LR chi2(7)      =     58.14
+Log likelihood  =   -2261.1522                     Prob > chi2     =    0.0000
+
+-------------------------------------------------------------------------------
+           _t | Haz. Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+--------------+----------------------------------------------------------------
+       interv |    .795654   .0897381    -2.03   0.043     .6378539    .9924926
+              |
+      age_cat |
+           3  |   .6339403    .094835    -3.05   0.002     .4728375    .8499331
+           4  |   .6477723   .1063919    -2.64   0.008     .4694817    .8937706
+           5  |   2.29e-14   1.15e-07    -0.00   1.000            0           .
+              |
+    who_stage |
+           2  |    .625745   .1573366    -1.86   0.062     .3822717    1.024289
+           3  |   2.200323    .371815     4.67   0.000     1.579969    3.064249
+              |
+1.post_deli~y |   1.612808   .1820605     4.23   0.000     1.292694    2.012194
+-------------------------------------------------------------------------------
+
+. estimates store cox_miss60_pre
+
+. stcox interv i.age_cat i.who_stage i.post_delivery if pre_post==1, hr
+
+         failure _d:  miss60_180
+   analysis time _t:  censor60_180
+
+Iteration 0:   log likelihood = -635.01562
+Iteration 1:   log likelihood = -630.01877
+Iteration 2:   log likelihood = -626.96695
+Iteration 3:   log likelihood = -626.79514
+Iteration 4:   log likelihood = -626.75319
+Iteration 5:   log likelihood =  -626.7378
+Iteration 6:   log likelihood = -626.73214
+Iteration 7:   log likelihood = -626.73006
+Iteration 8:   log likelihood = -626.72929
+Iteration 9:   log likelihood = -626.72901
+Iteration 10:  log likelihood = -626.72891
+Iteration 11:  log likelihood = -626.72887
+Iteration 12:  log likelihood = -626.72886
+Iteration 13:  log likelihood = -626.72885
+Iteration 14:  log likelihood = -626.72885
+Iteration 15:  log likelihood = -626.72885
+Iteration 16:  log likelihood = -626.72885
+Iteration 17:  log likelihood = -626.72885
+Iteration 18:  log likelihood = -626.72885
+Iteration 19:  log likelihood = -626.72885
+Iteration 20:  log likelihood = -626.72885
+Iteration 21:  log likelihood = -626.72885
+Iteration 22:  log likelihood = -626.72885
+Iteration 23:  log likelihood = -626.72885
+Iteration 24:  log likelihood = -626.72885
+Iteration 25:  log likelihood = -626.72885
+Iteration 26:  log likelihood = -626.72885
+Iteration 27:  log likelihood = -626.72885
+Iteration 28:  log likelihood = -626.72885
+Iteration 29:  log likelihood = -626.72885
+Iteration 30:  log likelihood = -626.72885
+Iteration 31:  log likelihood = -626.72885
+Iteration 32:  log likelihood = -626.72885
+Iteration 33:  log likelihood = -626.72885
+Iteration 34:  log likelihood = -626.72885
+Iteration 35:  log likelihood = -626.72885
+Iteration 36:  log likelihood = -626.72885
+Iteration 37:  log likelihood = -626.72885
+Iteration 38:  log likelihood = -626.72885
+Iteration 39:  log likelihood = -626.72885
+Iteration 40:  log likelihood = -626.72885
+Iteration 41:  log likelihood = -626.72885
+Iteration 42:  log likelihood = -626.72885
+Iteration 43:  log likelihood = -626.72885
+Iteration 44:  log likelihood = -626.72885
+Iteration 45:  log likelihood = -626.72885
+Refining estimates:
+Iteration 0:   log likelihood = -626.72885
+
+Cox regression -- Breslow method for ties
+
+No. of subjects =         1870                     Number of obs   =      1870
+No. of failures =           86
+Time at risk    =       290458
+                                                   LR chi2(7)      =     16.57
+Log likelihood  =   -626.72885                     Prob > chi2     =    0.0204
+
+-------------------------------------------------------------------------------
+           _t | Haz. Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+--------------+----------------------------------------------------------------
+       interv |   1.133848   .2506063     0.57   0.570     .7352239    1.748597
+              |
+      age_cat |
+           3  |   1.839904   .8639262     1.30   0.194     .7330163     4.61824
+           4  |   3.104885   1.509485     2.33   0.020     1.197351    8.051368
+           5  |   1.19e-19          .        .       .            .           .
+              |
+    who_stage |
+           2  |   1.267363   .3977931     0.75   0.450     .6850633    2.344616
+           3  |   1.054491   .6236685     0.09   0.929      .330832    3.361072
+           4  |   12.66653   9.296659     3.46   0.001     3.005486    53.38275
+              |
+1.post_deli~y |   1.186799   .2607412     0.78   0.436     .7715558    1.825523
+-------------------------------------------------------------------------------
+
+. estimates store cox_miss60_post
+
+. 
+. esttab  cox_miss_pre cox_miss_post cox_miss3_pre cox_miss3_post cox_miss7_pre cox_miss7_post ///
+>         cox_miss15_pre cox_miss15_post cox_miss60_pre cox_miss60_post ///
+>         using c:\3ie\analysis\Cox_miss_models_pre_post.rtf, ///
+>         stats(N) b(%8.2f) ci(%8.2f) nogaps ///
+>         title("Cox PH models of effects on missed visits in new patients") replace
+(output written to c:\3ie\analysis\Cox_miss_models_pre_post.rtf)
+
+. 
+. log close
+      name:  <unnamed>
+       log:  c:\3ie\analysis\Survival_new_pts.log
+  log type:  text
+ closed on:  16 Sep 2016, 17:27:55
+-----------------------------------------------------------------------------------------------------------------------------------------------

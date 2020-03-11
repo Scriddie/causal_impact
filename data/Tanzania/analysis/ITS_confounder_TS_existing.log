@@ -1,0 +1,175 @@
+---------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  c:\3ie\analysis\ITS_confounder_TS_existing.log
+  log type:  text
+ opened on:  17 Sep 2016, 07:10:38
+
+.         
+. use "existing pts\3ie_exist_vis.dta", clear
+
+. duplicates drop base_id c_nextvisitdate , force
+
+Duplicates in terms of base_id c_nextvisitdate
+
+(103 observations deleted)
+
+. * drops 101 visits with duplicate scheduled date
+. 
+. *create binary predictors
+. * age > 30
+. gen age_gt30=.
+(47794 missing values generated)
+
+. replace age_gt30 =0 if age_cat==2 | age_cat==3
+(26779 real changes made)
+
+. replace age_gt30 =1 if age_cat==4 | age_cat==5
+(19740 real changes made)
+
+. label var age_gt30 "Age >30 years (0/1)"
+
+. 
+. * married
+. gen married=.
+(47794 missing values generated)
+
+. replace married=0 if marstat==1 | marstat==3
+(6373 real changes made)
+
+. replace married=1 if marstat==2
+(28177 real changes made)
+
+. label var married "Married (0/1)"
+
+. 
+. * WHO stage > 1
+. gen who_gt1=.
+(47794 missing values generated)
+
+. replace who_gt1=1 if who_stage==2 | who_stage==3 | who_stage==4
+(17543 real changes made)
+
+. replace who_gt1=0 if who_stage==1
+(25545 real changes made)
+
+. label var who_gt1 "WHO stage >1 (0/1)"
+
+. 
+. * create time series variables by group
+. sort group visit_mon
+
+. by group visit_mon: egen pct_age_gt30 = mean(age_gt30)
+
+. by group visit_mon: egen pct_married = mean(married)
+
+. by group visit_mon: egen pct_who_gt1 = mean(who_gt1)
+
+. by group visit_mon: egen pct_post_deliv = mean(post_delivery)
+
+. 
+. by group visit_mon: keep if _n==1
+(47750 observations deleted)
+
+. 
+. drop if visit_mon<1 | visit_mon>20
+(4 observations deleted)
+
+.  
+. #d ;
+delimiter now ;
+. twoway 
+>         (connected pct_age_gt30 visit_mon if group=="Control", msymbol(none)) 
+>         || connected pct_age_gt30 visit_mon if group=="Intervention", msymbol(none) lcolor(blue)
+>         lwidth(thin)
+>         scheme(s1color) graphregion(fcolor(ltbluishgray8)) plotregion(fcolor(white))
+>         title("Percent over age 30") 
+>         subtitle("Intervention, control - all patients with visits in month")
+>         ytitle("% age>30") 
+>         ylabel(0 "0%" .1 "10%" .2 "20%" .3 "30%" .4 "40%" .5 "50%" .6 "60%" .7 "70%" .8 "80%" .9 "90%" 1.0 "1
+> 00%", 
+>         labsize(medium) angle(horizontal) grid) 
+>         xtitle("Study month")
+>         xline(13.5, lwidth(thick) lpattern(solid) lcolor(black)) 
+>         legend(rows (1) lab(1 "intervention") lab(2 "control") )
+>         saving(c:\3ie\Analysis\ITS_age_gt30, replace)
+>         xsize(2.97) ysize(2) scale(1.0);
+(file c:\3ie\Analysis\ITS_age_gt30.gph saved)
+
+. #d cr
+delimiter now cr
+. 
+. #d ;
+delimiter now ;
+. twoway 
+>         (connected pct_married visit_mon if group=="Control", msymbol(none)) 
+>         || connected pct_married visit_mon if group=="Intervention", msymbol(none) lcolor(blue)
+>         lwidth(thin)
+>         scheme(s1color) graphregion(fcolor(ltbluishgray8)) plotregion(fcolor(white))
+>         title("Percent married") 
+>         subtitle("Intervention, control - all patients with visits in month")
+>         ytitle("% married") 
+>         ylabel(0 "0%" .1 "10%" .2 "20%" .3 "30%" .4 "40%" .5 "50%" .6 "60%" .7 "70%" .8 "80%" .9 "90%" 1.0 "1
+> 00%", 
+>         labsize(medium) angle(horizontal) grid) 
+>         xtitle("Study month")
+>         xline(13.5, lwidth(thick) lpattern(solid) lcolor(black)) 
+>         legend(rows (1) lab(1 "intervention") lab(2 "control") )
+>         saving(c:\3ie\Analysis\ITS_married, replace)
+>         xsize(2.97) ysize(2) scale(1.0);
+(file c:\3ie\Analysis\ITS_married.gph saved)
+
+. #d cr
+delimiter now cr
+. 
+. #d ;
+delimiter now ;
+. twoway 
+>         (connected pct_who_gt1 visit_mon if group=="Control", msymbol(none)) 
+>         || connected pct_who_gt1 visit_mon if group=="Intervention", msymbol(none) lcolor(blue)
+>         lwidth(thin)
+>         scheme(s1color) graphregion(fcolor(ltbluishgray8)) plotregion(fcolor(white))
+>         title("Percent initial WHO status>1") 
+>         subtitle("Intervention, control - all patients with visits in month")
+>         ytitle("% WHO status>1") 
+>         ylabel(0 "0%" .1 "10%" .2 "20%" .3 "30%" .4 "40%" .5 "50%" .6 "60%" .7 "70%" .8 "80%" .9 "90%" 1.0 "1
+> 00%", 
+>         labsize(medium) angle(horizontal) grid) 
+>         xtitle("Study month")
+>         xline(13.5, lwidth(thick) lpattern(solid) lcolor(black)) 
+>         legend(rows (1) lab(1 "intervention") lab(2 "control") )
+>         saving(c:\3ie\Analysis\ITS_who_gt1, replace)
+>         xsize(2.97) ysize(2) scale(1.0);
+(file c:\3ie\Analysis\ITS_who_gt1.gph saved)
+
+. #d cr
+delimiter now cr
+. 
+. #d ;
+delimiter now ;
+. twoway 
+>         (connected pct_post_deliv visit_mon if group=="Control", msymbol(none)) 
+>         || connected pct_post_deliv visit_mon if group=="Intervention", msymbol(none) lcolor(blue)
+>         lwidth(thin)
+>         scheme(s1color) graphregion(fcolor(ltbluishgray8)) plotregion(fcolor(white))
+>         title("Percent post-delivery") 
+>         subtitle("Intervention, control - all patients with visits in month")
+>         ytitle("% post-delivery") 
+>         ylabel(0 "0%" .1 "10%" .2 "20%" .3 "30%" .4 "40%" .5 "50%" .6 "60%" .7 "70%" .8 "80%" .9 "90%" 1.0 "1
+> 00%", 
+>         labsize(medium) angle(horizontal) grid) 
+>         xtitle("Study month")
+>         xline(13.5, lwidth(thick) lpattern(solid) lcolor(black)) 
+>         legend(rows (1) lab(1 "intervention") lab(2 "control") )
+>         saving(c:\3ie\Analysis\ITS_post_deliv, replace)
+>         xsize(2.97) ysize(2) scale(1.0);
+(file c:\3ie\Analysis\ITS_post_deliv.gph saved)
+
+. #d cr
+delimiter now cr
+. 
+. log close
+      name:  <unnamed>
+       log:  c:\3ie\analysis\ITS_confounder_TS_existing.log
+  log type:  text
+ closed on:  17 Sep 2016, 07:10:53
+---------------------------------------------------------------------------------------------------------------

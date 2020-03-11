@@ -2,6 +2,11 @@ library(tidyverse)
 library(CausalImpact)
 library(foreign)
 
+### potentially interesting data sources:
+# https://clinicaltrials.gov/
+# kaggle dataset search
+###
+
 
 # TODO: find out what Xus data really means
 # TODO: find some time series RCT data (e.g. finance, advertising)
@@ -47,11 +52,38 @@ dim(fertilizer)
 # Xu paper data
 
 
+### Tanzania Data
+
+# We have the following data:
+# baseline
+# endline
+# existing patients
+# new patients
+
+library(ggplot2)
+
+pth = paste("data/Tanzania/data/baseline/", "3ie_base_visit.dta", sep="")
+df = data.frame(read.dta(pth))
+
+df_handy = df %>% 
+  dplyr::select(group, c_month)
+
+pth = paste("data/Tanzania/data/existing pts/", "3ie_exist_vis.dta", sep="")
+df = data.frame(read.dta(pth))
+write.csv(df, "existing_patients.csv")
 
 
+# Intervention miss a lot more? -> (they also have more patients, I think)
+aggregate(df$miss, by=list(df$interv), FUN=sum, na.rm=TRUE)
 
+# for proper plot, sum up by month
 
+df$plt_visit_date = as.factor(format(as.Date(df$c_visitdate, format="%Y-%m-%d"), "%Y-%m"))
+df_plt = aggregate(df$miss, by=list(df$interv, df$plt_visit_date), FUN=sum)
 
+plt = ggplot(df_plt) + 
+  geom_point(aes(x=Group.2, y=x, color=Group.1))
+plt
 
 
 

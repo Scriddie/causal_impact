@@ -1,0 +1,347 @@
+---------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  c:\3ie\analysis\GEE_baseline_existing.log
+  log type:  text
+ opened on:  17 Sep 2016, 07:10:05
+
+.         
+. use "existing pts\3ie_exist_vis.dta", clear
+
+. duplicates drop base_id c_nextvisitdate , force
+
+Duplicates in terms of base_id c_nextvisitdate
+
+(103 observations deleted)
+
+. * drops 101 visits with duplicate scheduled date
+. 
+. * restrict to baseline measures
+. keep if post_its2==0
+(19251 observations deleted)
+
+. 
+. iis base_id
+
+. tis c_nextvisitdate
+
+. 
+. * models one at at time
+. xi: xtgee miss i.interv, ///
+>         family(binomial) link(logit) corr(exch) robust eform noomitted
+i.interv          _Iinterv_0-1        (naturally coded; _Iinterv_0 omitted)
+
+Iteration 1: tolerance = .02188216
+Iteration 2: tolerance = .00018978
+Iteration 3: tolerance = 2.422e-06
+Iteration 4: tolerance = 3.285e-08
+
+GEE population-averaged model                   Number of obs      =     28543
+Group variable:                    base_id      Number of groups   =      3150
+Link:                                logit      Obs per group: min =         1
+Family:                           binomial                     avg =       9.1
+Correlation:                  exchangeable                     max =        16
+                                                Wald chi2(1)       =      8.76
+Scale parameter:                         1      Prob > chi2        =    0.0031
+
+                                (Std. Err. adjusted for clustering on base_id)
+------------------------------------------------------------------------------
+             |               Robust
+        miss | Odds Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  _Iinterv_1 |   .9104498   .0288526    -2.96   0.003     .8556201    .9687931
+       _cons |   .6723539    .016509   -16.17   0.000     .6407632    .7055021
+------------------------------------------------------------------------------
+
+.         estimates store miss_all_bl_group
+
+. 
+. xi: xtgee miss i.who_stage, ///
+>         family(binomial) link(logit) corr(exch) robust eform noomitted
+i.who_stage       _Iwho_stage_1-4     (naturally coded; _Iwho_stage_1 omitted)
+
+Iteration 1: tolerance = .02016707
+Iteration 2: tolerance = .00014545
+Iteration 3: tolerance = 1.899e-06
+Iteration 4: tolerance = 2.448e-08
+
+GEE population-averaged model                   Number of obs      =     25790
+Group variable:                    base_id      Number of groups   =      2825
+Link:                                logit      Obs per group: min =         1
+Family:                           binomial                     avg =       9.1
+Correlation:                  exchangeable                     max =        16
+                                                Wald chi2(3)       =     23.62
+Scale parameter:                         1      Prob > chi2        =    0.0000
+
+                                 (Std. Err. adjusted for clustering on base_id)
+-------------------------------------------------------------------------------
+              |               Robust
+         miss | Odds Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+--------------+----------------------------------------------------------------
+_Iwho_stage_2 |   1.197707   .0552335     3.91   0.000       1.0942    1.311006
+_Iwho_stage_3 |   .9748062   .0414488    -0.60   0.548     .8968611    1.059525
+_Iwho_stage_4 |   .8453237   .0680679    -2.09   0.037     .7219079    .9898384
+        _cons |   .6094088   .0129979   -23.22   0.000     .5844585    .6354242
+-------------------------------------------------------------------------------
+
+.         estimates store miss_all_bl_stage
+
+. 
+. xi: xtgee miss i.post_delivery, ///
+>         family(binomial) link(logit) corr(exch) robust eform noomitted
+i.post_delivery   _Ipost_deli_0-1     (naturally coded; _Ipost_deli_0 omitted)
+
+Iteration 1: tolerance = .02769258
+Iteration 2: tolerance = .00021127
+Iteration 3: tolerance = 2.929e-06
+Iteration 4: tolerance = 3.899e-08
+
+GEE population-averaged model                   Number of obs      =     24502
+Group variable:                    base_id      Number of groups   =      2675
+Link:                                logit      Obs per group: min =         1
+Family:                           binomial                     avg =       9.2
+Correlation:                  exchangeable                     max =        16
+                                                Wald chi2(1)       =      0.07
+Scale parameter:                         1      Prob > chi2        =    0.7875
+
+                                 (Std. Err. adjusted for clustering on base_id)
+-------------------------------------------------------------------------------
+              |               Robust
+         miss | Odds Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+--------------+----------------------------------------------------------------
+_Ipost_deli_1 |    .991509   .0313617    -0.27   0.787     .9319078    1.054922
+        _cons |   .6216334   .0160329   -18.43   0.000     .5909906    .6538651
+-------------------------------------------------------------------------------
+
+.         estimates store miss_all_bl_postdel
+
+. 
+. xi: xtgee miss i.age_cat, ///
+>         family(binomial) link(logit) corr(exch) robust eform noomitted
+i.age_cat         _Iage_cat_2-5       (naturally coded; _Iage_cat_2 omitted)
+
+Iteration 1: tolerance = .02542678
+Iteration 2: tolerance = .0001631
+Iteration 3: tolerance = 2.679e-06
+Iteration 4: tolerance = 3.541e-08
+
+GEE population-averaged model                   Number of obs      =     27783
+Group variable:                    base_id      Number of groups   =      3064
+Link:                                logit      Obs per group: min =         1
+Family:                           binomial                     avg =       9.1
+Correlation:                  exchangeable                     max =        16
+                                                Wald chi2(3)       =      3.39
+Scale parameter:                         1      Prob > chi2        =    0.3359
+
+                                (Std. Err. adjusted for clustering on base_id)
+------------------------------------------------------------------------------
+             |               Robust
+        miss | Odds Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+ _Iage_cat_3 |   1.101218   .0727429     1.46   0.144      .967488    1.253432
+ _Iage_cat_4 |   1.051821   .0705452     0.75   0.451     .9222575    1.199587
+ _Iage_cat_5 |   1.105719   .1332956     0.83   0.404      .873035    1.400419
+       _cons |   .5908259   .0367942    -8.45   0.000      .522938     .667527
+------------------------------------------------------------------------------
+
+.         estimates store miss_all_bl_agecat
+
+. 
+. xi: xtgee miss i.marstat, ///
+>         family(binomial) link(logit) corr(exch) robust eform noomitted
+i.marstat         _Imarstat_1-3       (naturally coded; _Imarstat_1 omitted)
+
+Iteration 1: tolerance = .02574215
+Iteration 2: tolerance = .00015442
+Iteration 3: tolerance = 2.653e-06
+Iteration 4: tolerance = 3.469e-08
+
+GEE population-averaged model                   Number of obs      =     20730
+Group variable:                    base_id      Number of groups   =      2274
+Link:                                logit      Obs per group: min =         1
+Family:                           binomial                     avg =       9.1
+Correlation:                  exchangeable                     max =        14
+                                                Wald chi2(2)       =      3.35
+Scale parameter:                         1      Prob > chi2        =    0.1870
+
+                                (Std. Err. adjusted for clustering on base_id)
+------------------------------------------------------------------------------
+             |               Robust
+        miss | Odds Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+ _Imarstat_2 |   1.108408   .0624557     1.83   0.068     .9925143    1.237834
+ _Imarstat_3 |   1.083473   .1006577     0.86   0.388     .9031065    1.299861
+       _cons |   .5932723   .0313015    -9.90   0.000      .534988    .6579064
+------------------------------------------------------------------------------
+
+.         estimates store miss_all_bl_marstat
+
+.         
+. xi: xtgee miss i.art_year, ///
+>         family(binomial) link(logit) corr(exch) robust eform noomitted
+i.art_year        _Iart_year_2012-2015(naturally coded; _Iart_year_2012 omitted)
+
+Iteration 1: tolerance = .03381732
+Iteration 2: tolerance = .00022534
+Iteration 3: tolerance = 4.333e-06
+Iteration 4: tolerance = 6.253e-08
+
+GEE population-averaged model                   Number of obs      =     28543
+Group variable:                    base_id      Number of groups   =      3150
+Link:                                logit      Obs per group: min =         1
+Family:                           binomial                     avg =       9.1
+Correlation:                  exchangeable                     max =        16
+                                                Wald chi2(3)       =     13.77
+Scale parameter:                         1      Prob > chi2        =    0.0032
+
+                                   (Std. Err. adjusted for clustering on base_id)
+---------------------------------------------------------------------------------
+                |               Robust
+           miss | Odds Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+----------------+----------------------------------------------------------------
+_Iart_year_2013 |   1.024698   .0922598     0.27   0.786     .8589283     1.22246
+_Iart_year_2014 |   1.008047   .0874965     0.09   0.926     .8503504    1.194987
+_Iart_year_2015 |   .6573233   .0945813    -2.92   0.004     .4957936    .8714795
+          _cons |   .6325689   .0536143    -5.40   0.000      .535751    .7468833
+---------------------------------------------------------------------------------
+
+.         estimates store miss_all_bl_artyear
+
+. 
+. xi: xtgee miss i.fac_id, ///
+>         family(binomial) link(logit) corr(exch) robust eform noomitted
+i.fac_id          _Ifac_id_1-24       (naturally coded; _Ifac_id_1 omitted)
+
+Iteration 1: tolerance = .01826684
+Iteration 2: tolerance = .00012488
+Iteration 3: tolerance = 1.777e-06
+Iteration 4: tolerance = 2.191e-08
+
+GEE population-averaged model                   Number of obs      =     28543
+Group variable:                    base_id      Number of groups   =      3150
+Link:                                logit      Obs per group: min =         1
+Family:                           binomial                     avg =       9.1
+Correlation:                  exchangeable                     max =        16
+                                                Wald chi2(23)      =    333.65
+Scale parameter:                         1      Prob > chi2        =    0.0000
+
+                                (Std. Err. adjusted for clustering on base_id)
+------------------------------------------------------------------------------
+             |               Robust
+        miss | Odds Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  _Ifac_id_2 |   .9772465   .0845747    -0.27   0.790     .8247794    1.157898
+  _Ifac_id_3 |   1.129251   .1059181     1.30   0.195       .93962    1.357154
+  _Ifac_id_4 |   1.343628   .1217361     3.26   0.001     1.125014    1.604723
+  _Ifac_id_5 |    1.32508      .1146     3.25   0.001     1.118473    1.569851
+  _Ifac_id_6 |   1.410006   .1275908     3.80   0.000     1.180854    1.683627
+  _Ifac_id_7 |   1.191266   .1005341     2.07   0.038     1.009657    1.405543
+  _Ifac_id_8 |   .8199969   .0760432    -2.14   0.032     .6837152     .983443
+  _Ifac_id_9 |   1.409935   .1144061     4.23   0.000     1.202625    1.652981
+ _Ifac_id_10 |   .4352633   .0482892    -7.50   0.000     .3502013    .5409865
+ _Ifac_id_11 |   .8042496   .0759692    -2.31   0.021     .6683233    .9678213
+ _Ifac_id_12 |   .8787275   .0741513    -1.53   0.126      .744776    1.036771
+ _Ifac_id_13 |   .7905624   .0914198    -2.03   0.042     .6302374    .9916723
+ _Ifac_id_14 |   1.653586   .1447502     5.75   0.000     1.392885    1.963083
+ _Ifac_id_15 |   .8783624    .093528    -1.22   0.223     .7129152    1.082205
+ _Ifac_id_16 |   1.021413   .1199104     0.18   0.857     .8114718     1.28567
+ _Ifac_id_17 |   .8028093   .0786707    -2.24   0.025     .6625208    .9728039
+ _Ifac_id_18 |   1.458243   .1562078     3.52   0.000     1.182085    1.798917
+ _Ifac_id_19 |   1.164141   .0967279     1.83   0.067     .9891897    1.370034
+ _Ifac_id_20 |   1.777777   .1752371     5.84   0.000     1.465459    2.156657
+ _Ifac_id_21 |   .9135974   .0830579    -0.99   0.320      .764486    1.091793
+ _Ifac_id_22 |   .7997945   .1142286    -1.56   0.118     .6045159    1.058154
+ _Ifac_id_23 |    1.33752    .161605     2.41   0.016     1.055491    1.694909
+ _Ifac_id_24 |   1.118688   .0942324     1.33   0.183     .9484367    1.319501
+       _cons |   .5792459   .0334025    -9.47   0.000     .5173424    .6485567
+------------------------------------------------------------------------------
+
+.         estimates store miss_all_bl_facid
+
+.         
+. * fully specified model with facility indicators
+. xi: xtgee miss i.interv i.who_stage i.post_delivery ///
+>         i.age_cat i.marstat i.art_year i.fac_id, ///
+>         family(binomial) link(logit) corr(exch) robust eform noomitted
+i.interv          _Iinterv_0-1        (naturally coded; _Iinterv_0 omitted)
+i.who_stage       _Iwho_stage_1-4     (naturally coded; _Iwho_stage_1 omitted)
+i.post_delivery   _Ipost_deli_0-1     (naturally coded; _Ipost_deli_0 omitted)
+i.age_cat         _Iage_cat_2-5       (naturally coded; _Iage_cat_2 omitted)
+i.marstat         _Imarstat_1-3       (naturally coded; _Imarstat_1 omitted)
+i.art_year        _Iart_year_2012-2015(naturally coded; _Iart_year_2012 omitted)
+i.fac_id          _Ifac_id_1-24       (naturally coded; _Ifac_id_1 omitted)
+note: _Ifac_id_24 omitted because of collinearity
+
+Iteration 1: tolerance = .03893175
+Iteration 2: tolerance = .00038457
+Iteration 3: tolerance = 7.013e-06
+Iteration 4: tolerance = 1.264e-07
+
+GEE population-averaged model                   Number of obs      =     15852
+Group variable:                    base_id      Number of groups   =      1707
+Link:                                logit      Obs per group: min =         1
+Family:                           binomial                     avg =       9.3
+Correlation:                  exchangeable                     max =        14
+                                                Wald chi2(35)      =    168.76
+Scale parameter:                         1      Prob > chi2        =    0.0000
+
+                                   (Std. Err. adjusted for clustering on base_id)
+---------------------------------------------------------------------------------
+                |               Robust
+           miss | Odds Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+----------------+----------------------------------------------------------------
+     _Iinterv_1 |   .8037712   .0911337    -1.93   0.054     .6436073    1.003793
+  _Iwho_stage_2 |   1.081801   .0673644     1.26   0.207     .9575083    1.222228
+  _Iwho_stage_3 |   .9363171    .054513    -1.13   0.258     .8353442    1.049495
+  _Iwho_stage_4 |   .8777049   .0847917    -1.35   0.177      .726302    1.060669
+  _Ipost_deli_1 |   1.039723   .0420958     0.96   0.336     .9604052    1.125591
+    _Iage_cat_3 |   1.064948    .089503     0.75   0.454     .9032122    1.255646
+    _Iage_cat_4 |   1.031772   .0897017     0.36   0.719      .870123    1.223451
+    _Iage_cat_5 |   1.187246     .16646     1.22   0.221     .9019794    1.562734
+    _Imarstat_2 |   1.122786   .0718833     1.81   0.070     .9903784    1.272896
+    _Imarstat_3 |   .9992354   .1070356    -0.01   0.994     .8100079    1.232669
+_Iart_year_2013 |   1.119431   .1376125     0.92   0.359     .8797487    1.424414
+_Iart_year_2014 |   1.105243   .1314216     0.84   0.400     .8754749    1.395314
+_Iart_year_2015 |   .8585995    .168949    -0.77   0.438     .5838447    1.262653
+     _Ifac_id_2 |   1.168473   .1402085     1.30   0.194      .923593    1.478281
+     _Ifac_id_3 |   1.163054   .1480967     1.19   0.236     .9061767     1.49275
+     _Ifac_id_4 |   1.481686   .2451639     2.38   0.017     1.071307    2.049266
+     _Ifac_id_5 |   1.438856   .1687605     3.10   0.002     1.143356    1.810727
+     _Ifac_id_6 |   1.704079   .2203491     4.12   0.000     1.322585    2.195613
+     _Ifac_id_7 |   1.280689    .152345     2.08   0.038     1.014352    1.616958
+     _Ifac_id_8 |   .9784795   .1224631    -0.17   0.862     .7656289    1.250504
+     _Ifac_id_9 |   1.494995   .1822965     3.30   0.001     1.177188    1.898599
+    _Ifac_id_10 |    .477579    .138063    -2.56   0.011     .2710016    .8416249
+    _Ifac_id_11 |   .8887366   .1100687    -0.95   0.341     .6971931    1.132904
+    _Ifac_id_12 |   .9978594    .113145    -0.02   0.985     .7990125    1.246192
+    _Ifac_id_13 |   .8855944   .1632805    -0.66   0.510     .6170146    1.271084
+    _Ifac_id_14 |   1.425047   .1627466     3.10   0.002     1.139248    1.782543
+    _Ifac_id_15 |   .7726265   .1002284    -1.99   0.047     .5991673    .9963023
+    _Ifac_id_16 |   .9555507   .1386845    -0.31   0.754     .7189753     1.26997
+    _Ifac_id_17 |   .7319758   .0927602    -2.46   0.014     .5709887    .9383522
+    _Ifac_id_18 |   1.395485   .1746691     2.66   0.008       1.0919    1.783478
+    _Ifac_id_19 |   1.072732   .1216865     0.62   0.536     .8588838    1.339826
+    _Ifac_id_20 |   1.719413   .2564635     3.63   0.000     1.283563    2.303262
+    _Ifac_id_21 |   .8215389   .0928109    -1.74   0.082     .6583641    1.025156
+    _Ifac_id_22 |   .8580044    .196475    -0.67   0.504     .5477373    1.344023
+    _Ifac_id_23 |   1.148594   .2033562     0.78   0.434     .8118258    1.625062
+                |
+          _cons |   .4742835   .0801197    -4.42   0.000     .3406014    .6604342
+---------------------------------------------------------------------------------
+
+.         estimates store miss_all_bl_all
+
+. 
+. esttab miss_all_bl_group miss_all_bl_stage miss_all_bl_postdel miss_all_bl_agecat ///
+>         miss_all_bl_marstat miss_all_bl_artyear miss_all_bl_facid  miss_all_bl_all ///
+>         using c:\3ie\analysis\GEE_all_BL_predictors.rtf, ///
+>         stats(N) b(%8.2f) ci(%8.2f) eform nogaps ///
+>         title("GEE BL predictors of missed visits - all existing patients") replace
+(output written to c:\3ie\analysis\GEE_all_BL_predictors.rtf)
+
+.                 
+. log close
+      name:  <unnamed>
+       log:  c:\3ie\analysis\GEE_baseline_existing.log
+  log type:  text
+ closed on:  17 Sep 2016, 07:10:38
+---------------------------------------------------------------------------------------------------------------

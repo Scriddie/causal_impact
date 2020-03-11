@@ -1,0 +1,1917 @@
+-----------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  c:\3ie\data\existing pts\3ie_prepare_existing_pts.log
+  log type:  text
+ opened on:  16 Sep 2016, 16:24:43
+
+. 
+. ********************************************************************************************
+. ********************************************************************************************
+. * SECTION 1: CREATE CONSOLIDATED PATIENT FILE (EXCEPT FOR CONTINUOUS VARIABLE ADDED LATER)
+. ********************************************************************************************
+. ********************************************************************************************
+. use "endline\all_endline_pts.dta", clear 
+
+. duplicates tag (end_id), gen (tag)
+
+Duplicates in terms of end_id
+
+. list  base_id end_id fac_id datestartart if tag==1
+
+      +----------------------------------------------+
+      |    base_id       end_id   fac_id   datesta~t |
+      |----------------------------------------------|
+1951. |          0   1201676604       12   06aug2014 |
+1975. | 1200606612   1200606609       12   12aug2014 |
+1979. | 1201676614   1201676604       12   06aug2014 |
+1998. |          0   1200606609       12   12aug2014 |
+2168. |          0   1300615010       13   11nov2014 |
+      |----------------------------------------------|
+2242. | 1300615022   1300615010       13   11nov2014 |
+2427. | 1400089822   1400089802       14   11nov2014 |
+2433. |          0   1400089802       14   11nov2014 |
+2707. |          0   1700305710       17   30oct2014 |
+2743. | 1700305723   1700305710       17   30oct2014 |
+      |----------------------------------------------|
+3263. | 2200000221   2200000204       22   17mar2014 |
+3297. |          0   2200000204       22   23jan2014 |
+      +----------------------------------------------+
+
+. *12 duplicates new/exist; keep them until merging with baseline data
+. drop tag
+
+. 
+. ****************************************
+. * KEEP ONLY EXIST PATIENTS WITH A BASE_ID
+. *****************************************
+. table patienttype
+
+-----------------------------
+differentiates   |
+existing from    |
+new pts          |      Freq.
+-----------------+-----------
+Existing Patient |      2,940
+     New Patient |        673
+-----------------------------
+
+. /*
+> -----------------------------
+> differentiates   |
+> existing from    |
+> new pts          |      Freq.
+> -----------------+-----------
+> Existing Patient |      2,940
+>      New Patient |        673
+> -----------------------------
+> */
+. drop if patienttype=="New Patient"
+(673 observations deleted)
+
+. 
+. drop if base_id==.
+(5 observations deleted)
+
+. * drops 5 patients
+. di _N
+2935
+
+. * n=2935
+. 
+. duplicates tag (base_id fac_id), gen (tag)
+
+Duplicates in terms of base_id fac_id
+
+. tab tag
+
+        tag |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |      2,861       97.48       97.48
+          1 |         74        2.52      100.00
+------------+-----------------------------------
+      Total |      2,935      100.00
+
+. duplicates drop (base_id fac_id), force
+
+Duplicates in terms of base_id fac_id
+
+(37 observations deleted)
+
+. drop tag
+
+. di _N
+2898
+
+. * n=2898
+. 
+. duplicates tag (base_id ), gen (tag)
+
+Duplicates in terms of base_id
+
+. list base_id end_id fac_id if tag>0
+
+      +--------------------------------+
+      |   base_id      end_id   fac_id |
+      |--------------------------------|
+ 585. | 500367711   500367703        5 |
+1773. | 500367711    13003677       13 |
+      +--------------------------------+
+
+. drop if end_id==13003677
+(1 observation deleted)
+
+. drop tag
+
+. di _N
+2897
+
+. * n=2897
+. 
+. keep  base_id end_id patientdelivery end visittype
+
+. save temp_pt_exist.dta, replace
+(note: file temp_pt_exist.dta not found)
+file temp_pt_exist.dta saved
+
+. di _N
+2897
+
+. *n=2897
+. 
+. *********************************************************************
+. *MERGE PATIENTS FROM ENDLINE TO THE CLEANED BASELINE PATIENT DATA SET
+. *FLAG PATIENTS WITH NO ENDLINE VISIT
+. *********************************************************************
+. use temp_pt_exist.dta, clear
+
+. merge 1:1 base_id using "baseline\3ie_base_pt.dta"
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                           254
+        from master                         0  (_merge==1)
+        from using                        254  (_merge==2)
+
+    matched                             2,897  (_merge==3)
+    -----------------------------------------
+
+. order group district fac_id fac_id
+
+. gen no_endline=0
+
+. replace no_endline=1 if _merge==2
+(254 real changes made)
+
+. label var no_endline "Patient with no endline record (dropout, transfer, lost record)"
+
+. replace end_id=base_id if no_endline==1
+(254 real changes made)
+
+. tabulate no_endline
+
+    Patient |
+    with no |
+    endline |
+     record |
+  (dropout, |
+  transfer, |
+       lost |
+    record) |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |      2,897       91.94       91.94
+          1 |        254        8.06      100.00
+------------+-----------------------------------
+      Total |      3,151      100.00
+
+. /*
+>  no_endline |      Freq.     Percent        Cum.
+> ------------+-----------------------------------
+>           0 |      2,897       91.94       91.94
+>           1 |        254        8.06      100.00
+> ------------+-----------------------------------
+>       Total |      3,151      100.00
+> */
+. 
+. **********************************************************************************
+. * IDENTIFY FIRST AND LAST VISIT DATES FOR PATIENTS WITH NO ENDLINE VISIT BELOW
+. ***********************************************************************************
+. drop _merge
+
+. drop visittype art_start datestartart
+
+. gen art_year=year(c_art_start)
+
+. label var art_year "Year of ART initiation"
+
+. 
+. * create delivery year
+. gen delivery_year = year(patientdelivery)
+(476 missing values generated)
+
+. label var delivery_year "Year of delivery"
+
+. gen delivery_month = mofd(patientdelivery)
+(476 missing values generated)
+
+. format delivery_month %tm
+
+. label var delivery_month "Month of delivery"
+
+. 
+. * recode age category with first category <20
+. replace age_cat=2 if age_cat==1
+(5 real changes made)
+
+. label define agecat 2 "<20yo" 3 "21-30yo" 4 "31-40yo" 5 ">40yo"
+
+. label values age_cat agecat
+
+. label variable age_cat "Age category"
+
+. 
+. tabulate maritalstatus
+
+    Marital |
+     Status |      Freq.     Percent        Cum.
+------------+-----------------------------------
+         CO |         13        0.41        0.41
+          D |         62        1.97        2.38
+          M |      1,846       58.58       60.96
+          S |        282        8.95       69.91
+          W |         72        2.28       72.20
+       null |        876       27.80      100.00
+------------+-----------------------------------
+      Total |      3,151      100.00
+
+. /*
+>     Marital |
+>      Status |      Freq.     Percent        Cum.
+> ------------+-----------------------------------
+>          CO |         13        0.41        0.41
+>           D |         62        1.97        2.38
+>           M |      1,846       58.58       60.96
+>           S |        282        8.95       69.91
+>           W |         72        2.28       72.20
+>        null |        876       27.80      100.00
+> ------------+-----------------------------------
+>       Total |      3,151      100.00
+> */
+. * recode marital status
+. gen marstat=.
+(3151 missing values generated)
+
+. replace marstat=1 if maritalstatus=="S"
+(282 real changes made)
+
+. replace marstat=2 if maritalstatus=="M" | maritalstatus=="CO"
+(1859 real changes made)
+
+. replace marstat=3 if maritalstatus=="D" | maritalstatus=="W"
+(134 real changes made)
+
+. replace marstat=. if maritalstatus=="null"
+(0 real changes made)
+
+. label define marstat 1 "single" 2 "married/cohab" 3 "divor/widow"
+
+. label values marstat marstat
+
+. label variable marstat "Marital status"
+
+. tabulate marstat, missing
+
+      Marital |
+       status |      Freq.     Percent        Cum.
+--------------+-----------------------------------
+       single |        282        8.95        8.95
+married/cohab |      1,859       59.00       67.95
+  divor/widow |        134        4.25       72.20
+            . |        876       27.80      100.00
+--------------+-----------------------------------
+        Total |      3,151      100.00
+
+. 
+. * add facility labels
+. gen fac_label=""
+(3151 missing values generated)
+
+. replace fac_label="Facil 1" if fac_id==1
+fac_label was str1 now str7
+(203 real changes made)
+
+. replace fac_label="Facil 2" if fac_id==2
+(189 real changes made)
+
+. replace fac_label="Facil 3" if fac_id==3
+(115 real changes made)
+
+. replace fac_label="Facil 4" if fac_id==4
+(140 real changes made)
+
+. replace fac_label="Facil 5" if fac_id==5
+(199 real changes made)
+
+. replace fac_label="Facil 6" if fac_id==6
+(132 real changes made)
+
+. replace fac_label="Facil 7" if fac_id==7
+(196 real changes made)
+
+. replace fac_label="Facil 8" if fac_id==8
+(118 real changes made)
+
+. replace fac_label="Facil 9" if fac_id==9
+(199 real changes made)
+
+. replace fac_label="Facil 10" if fac_id==10
+fac_label was str7 now str8
+(101 real changes made)
+
+. replace fac_label="Facil 11" if fac_id==11
+(127 real changes made)
+
+. replace fac_label="Facil 12" if fac_id==12
+(206 real changes made)
+
+. replace fac_label="Facil 13" if fac_id==13
+(79 real changes made)
+
+. replace fac_label="Facil 14" if fac_id==14
+(198 real changes made)
+
+. replace fac_label="Facil 15" if fac_id==15
+(36 real changes made)
+
+. replace fac_label="Facil 16" if fac_id==16
+(59 real changes made)
+
+. replace fac_label="Facil 17" if fac_id==17
+(82 real changes made)
+
+. replace fac_label="Facil 18" if fac_id==18
+(58 real changes made)
+
+. replace fac_label="Facil 19" if fac_id==19
+(204 real changes made)
+
+. replace fac_label="Facil 20" if fac_id==20
+(88 real changes made)
+
+. replace fac_label="Facil 21" if fac_id==21
+(118 real changes made)
+
+. replace fac_label="Facil 22" if fac_id==22
+(64 real changes made)
+
+. replace fac_label="Facil 23" if fac_id==23
+(64 real changes made)
+
+. replace fac_label="Facil 24" if fac_id==24
+(176 real changes made)
+
+. label var fac_label "Facility name"
+
+. 
+. order group district fac_label fac_id base_id end_id patientdelivery c_art_start art_year maritalstatus who_stage ///
+>         age_cat cd4_cat no_endline
+
+. * save as temp patient file
+. 
+. tabulate group, missing
+
+       Group |      Freq.     Percent        Cum.
+-------------+-----------------------------------
+     Control |      1,226       38.91       38.91
+Intervention |      1,925       61.09      100.00
+-------------+-----------------------------------
+       Total |      3,151      100.00
+
+. /*       Group |      Freq.     Percent        Cum.
+> -------------+-----------------------------------
+>      Control |      1,226       38.91       38.91
+> Intervention |      1,925       61.09      100.00
+> -------------+-----------------------------------
+>        Total |      3,151      100.00
+> */
+. 
+. save "temp_3ie_exist_pts_without_continuous_variable.dta", replace
+(note: file temp_3ie_exist_pts_without_continuous_variable.dta not found)
+file temp_3ie_exist_pts_without_continuous_variable.dta saved
+
+. 
+. 
+. ********************************************************************************************
+. ********************************************************************************************
+. * SECTION 2: CLEAN VISIT DATA AND CREATE EXISTING PATIENT VISIT FILE
+. ********************************************************************************************
+. ********************************************************************************************
+. use "endline\all_endline_visits.dta", clear
+
+. 
+. gen visittype="Endline" 
+
+. rename arvadheherence arvadherence
+
+. label var arvadherence "ARV Adherence"
+
+. di _N
+28751
+
+. *28751
+. 
+. * drop visits from new patients
+. merge m:1 end_id using "new pts\3ie_new_pts.dta", keepusing( end_id )
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                        25,116
+        from master                    25,116  (_merge==1)
+        from using                          0  (_merge==2)
+
+    matched                             3,635  (_merge==3)
+    -----------------------------------------
+
+. drop if _merge==3
+(3635 observations deleted)
+
+. *n=3635
+. drop _merge
+
+. 
+. *incorporate base_id variable
+. merge m:1 end_id using "temp_3ie_exist_pts_without_continuous_variable", keepusing (base_id fac_id end)
+(label agecat already defined)
+(label marstat already defined)
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                           684
+        from master                       365  (_merge==1)
+        from using                        319  (_merge==2)
+
+    matched                            24,751  (_merge==3)
+    -----------------------------------------
+
+. order base_id end_id fac_id end
+
+. 
+. * drop pts who were not identified at baseline (_merge==1)
+. drop if _merge==1
+(365 observations deleted)
+
+. *n=319
+. 
+. * drop patients who had no visit recorded at endline (_merge==2)
+. drop if _merge==2
+(319 observations deleted)
+
+. *n=0
+. 
+. ***********************************************************************************
+. * NOTE: PATIENTS WITH NO ENDLINE VISITS WILL STAY IN ANALYSIS
+. ***********************************************************************************
+. di _N
+24751
+
+. *N=25116
+. 
+. keep base_id end_id visittype visitdate nextvisitdate fac_id arvdaysdispensed end
+
+. 
+. * create cleaning variables
+. gen c_visitdate=visitdate
+
+. format c_visitdate %td
+
+. gen c_nextvisitdate=nextvisitdate
+
+. format c_nextvisitdate %td
+
+. gen double vis=dofd( visitdate)
+
+. gen c_mo=mofd(visitdate)
+
+. gen c_yr=yofd(visitdate)
+
+. gen c_next_yr=yofd(nextvisitdate)
+
+. label var c_visitdate "Cleaned visit date"
+
+. label var c_nextvisitdate "Cleaned next visit date"
+
+. save temp_endvistoclean.dta, replace
+(note: file temp_endvistoclean.dta not found)
+file temp_endvistoclean.dta saved
+
+. 
+. ****************************************************
+. * CLEAN ENDLINE VISITS FOR EXISTING PATIENTS
+. ****************************************************
+. use temp_endvistoclean.dta, clear
+
+. 
+. *check no leftover duplicate endline visits
+. duplicates drop (end_id c_visitdate c_nextvisitdate), force
+
+Duplicates in terms of end_id c_visitdate c_nextvisitdate
+
+(0 observations are duplicates)
+
+. *n=0
+. 
+. * correct month typos
+. sort base_id c_visitdate
+
+. replace c_visitdate= c_visitdate[_n-1] + 30 ///
+>  if base_id==base_id[_n-1] & base_id==base_id[_n+1] & c_visitdate-c_visitdate[_n-1]<7 & c_visitdate[_n+1]-c_visitdate[_n-1]>59 
+(34 real changes made)
+
+. *n=35
+. 
+. replace c_nextvisitdate=c_visitdate[_n+1] if base_id==2101028323 & vis==20296 
+(1 real change made)
+
+. *n=1
+. 
+. * correct year for visits scheduled in Jan 2016 and written as Jan2015
+. replace c_nextvisitdate=c_visitdate+31 if  c_mo==671 & c_next_yr==2015 
+(165 real changes made)
+
+. * n=167
+. 
+. ***************************************************************************************************************
+. * FLAG ENDLINE VISITS BEFORE BASELINE DATE AND UNDUPLICATE LATER
+. ***************************************************************************************************************
+. count if c_visitdate<20179 & c_nextvisitdate<20179 
+  120
+
+. * n=122
+. gen early_visit=0
+
+. replace early_visit=1 if c_visitdate<td(01Apr2015) & c_nextvisitdate<td(01Apr2015)
+(120 real changes made)
+
+. label var early_visit "Visit recorded at endline with date prior to baseline"
+
+. 
+. *clean logical problems in visit dates
+. replace c_visitdate=c_nextvisitdate-30 if arvdaysdispensed==30 & vis<19000
+(3 real changes made)
+
+. *n=0 
+. replace c_nextvisitdate=c_visitdate+30 if arvdaysdispensed==30 & c_nextvisitdate<19000 
+(2 real changes made)
+
+. *n=2
+. replace c_visitdate=c_visitdate -365 if c_visitdate>end  & c_visitdate~=. & c_next_yr==2015 
+(111 real changes made)
+
+. *n=110
+. replace c_visitdate=c_visitdate -365 if c_visitdate>end  & c_visitdate>c_nextvisitdate & c_next_yr==2015 
+(3 real changes made)
+
+. *n=2
+. replace c_nextvisitdate=c_nextvisitdate-365 if c_next_yr==2016 & c_nextvisitdate>end & c_visitdate>end
+(20 real changes made)
+
+. *n=20
+. replace c_visitdate=c_visitdate-365 if  c_next_yr==2016 & c_visitdate>end
+(50 real changes made)
+
+. *n=49
+. replace c_visitdate=td(01jun2015) if end_id==901154704 & vis==33389
+(1 real change made)
+
+. *n=1
+. replace c_visitdate=td(26may2015) if end_id==1201662104 & vis==21330
+(1 real change made)
+
+. *n=1
+. replace c_visitdate=td(29jan2016) if end_id==1800013704 & vis==21578
+(1 real change made)
+
+. *n=1
+. 
+. * cannot clean if two dates are beyond datacollection
+. drop if c_visitdate>end & c_nextvisitdate>end 
+(2 observations deleted)
+
+. *n=2
+. 
+. * assume scheduled visit 30 days after visit if visit= end and 30 pills dispensed
+. replace c_nextvisitdate=c_visitdate + 30 if vis==end & c_visitdate~=. & c_nextvisitdate>end & arvdaysdispensed==30 
+(10 real changes made)
+
+. *n=10
+. replace c_visitdate=c_visitdate-365 if c_nextvisitdate< c_visitdate & c_yr~=c_next_yr  
+(61 real changes made)
+
+. *n=64
+. 
+. * drop records that do not make sense and cannot logically be cleaned
+. * this leads to small increase in rate of missed visits
+. drop if c_nextvisitdate< c_visitdate 
+(78 observations deleted)
+
+. *n=83
+. drop if c_visitdate==c_nextvisitdate 
+(52 observations deleted)
+
+. *n=53
+. 
+. sort base_id c_visitdate c_nextvisitdate
+
+. drop if base_id~=base_id[_n-1] & base_id==base_id[_n+1]& c_visitdate[_n+1]-c_visitdate>150 
+(67 observations deleted)
+
+. *n=69
+. drop if c_nextvisitdate -c_visitdate>365 & c_visitdate~=.
+(168 observations deleted)
+
+. * n=170
+. 
+. *based on field observations, assume that  pills are given at each visit 
+. replace arvdaysdispensed=30 if (c_nextvisitdate-c_visitdate>15) & (c_nextvisitdate-c_visitdate)<45 & arvdaysdispensed==.
+(0 real changes made)
+
+. replace arvdaysdispensed=60 if (c_nextvisitdate-c_visitdate>44) & (c_nextvisitdate-c_visitdate)<62 & arvdaysdispensed==.
+(0 real changes made)
+
+. di _N
+24384
+
+. *n=24739
+. 
+. sort base_id c_visitdate c_nextvisitdate
+
+. count if (base_id==base_id[_n-1] & c_visitdate==c_visitdate[_n-1]) | ///
+>         (base_id==base_id[_n+1] & c_visitdate==c_visitdate[_n+1])
+   70
+
+. *n=307
+. drop if (base_id==base_id[_n-1] & c_visitdate==c_visitdate[_n-1]) 
+(35 observations deleted)
+
+. *n=177
+. drop vis c_mo c_yr c_next_yr visitdate nextvisitdate
+
+. di _N
+24349
+
+. *n=24562
+. 
+. save temp_cleanedvisitendline.dta, replace
+(note: file temp_cleanedvisitendline.dta not found)
+file temp_cleanedvisitendline.dta saved
+
+. 
+. ************************************************************
+. *APPEND VISITS FROM ENDLINE TO THE CLEANED BASELINE DATA SET
+. ************************************************************
+. use "baseline\3ie_base_visit.dta", clear
+
+. gen visittype="Baseline"
+
+. keep fac_id visitdate nextvisitdate ///
+> arvdaysdispensed base_id visittype c_visitdate c_nextvisitdate
+
+. di _N
+26644
+
+. *n=26,644
+. 
+. * merge with temp patient file
+. merge m:1 base_id using "temp_3ie_exist_pts_without_continuous_variable.dta", keepusing(end_id  )
+(label cd4 already defined)
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                             0
+    matched                            26,644  (_merge==3)
+    -----------------------------------------
+
+. *all merge correctly
+. drop _merge
+
+. append using temp_cleanedvisitendline.dta
+
+. gen patienttype="Existing patient" 
+
+. replace early_visit=0 if early_visit==. 
+(26644 real changes made)
+
+. table early_visit
+
+----------------------
+Visit     |
+recorded  |
+at        |
+endline   |
+with date |
+prior to  |
+baseline  |      Freq.
+----------+-----------
+        0 |     50,877
+        1 |        116
+----------------------
+
+. * n=117 early visits that might be duplicates
+. 
+. * drop record with only 1 visit in 2013
+. drop if end_id==100797722
+(1 observation deleted)
+
+. count
+50992
+
+. * 51,205
+. 
+. duplicates drop ( c_visitdate c_nextvisitdate base_id end_id ), force
+
+Duplicates in terms of c_visitdate c_nextvisitdate base_id end_id
+
+(537 observations deleted)
+
+. * drops 540 visits
+. count if early_visit==1
+   63
+
+. * n=64
+. 
+.  *drop duplicates and near duplicate visits (i.e., window<7d )
+. sort base_id c_visitdate
+
+. drop if base_id==base_id[_n-1] & c_visitdate-c_visitdate[_n-1]<7 
+(226 observations deleted)
+
+. * n=419
+. di _N
+50229
+
+. *N=50,246
+. 
+. sort end_id c_visitdate visitdate
+
+. tab  arvdaysdispensed, m 
+
+   ARV days |
+  Dispensed |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |          3        0.01        0.01
+          3 |         20        0.04        0.05
+          4 |          1        0.00        0.05
+          5 |          2        0.00        0.05
+          7 |          2        0.00        0.06
+          8 |          2        0.00        0.06
+         14 |         44        0.09        0.15
+         15 |          1        0.00        0.15
+         21 |          1        0.00        0.15
+         30 |     48,457       96.47       96.62
+         32 |          3        0.01       96.63
+         33 |          5        0.01       96.64
+         34 |          9        0.02       96.66
+         35 |         18        0.04       96.69
+         36 |          3        0.01       96.70
+         38 |         42        0.08       96.78
+         39 |          1        0.00       96.78
+         40 |          8        0.02       96.80
+         41 |          1        0.00       96.80
+         44 |          1        0.00       96.80
+         45 |          3        0.01       96.81
+         46 |          1        0.00       96.81
+         47 |          1        0.00       96.81
+         48 |          3        0.01       96.82
+         50 |          3        0.01       96.83
+         52 |          1        0.00       96.83
+         53 |          1        0.00       96.83
+         54 |          1        0.00       96.83
+         55 |          1        0.00       96.83
+         56 |          2        0.00       96.84
+         60 |      1,573        3.13       99.97
+         64 |          1        0.00       99.97
+         65 |          1        0.00       99.97
+         68 |          1        0.00       99.98
+         70 |          1        0.00       99.98
+         84 |          1        0.00       99.98
+         90 |         10        0.02      100.00
+------------+-----------------------------------
+      Total |     50,229      100.00
+
+. *no missing arvdaysdispensed
+. 
+.  * check no leftover duplicate visits
+. duplicates drop (base_id c_visitdate ) , force
+
+Duplicates in terms of base_id c_visitdate
+
+(0 observations are duplicates)
+
+. label var visittype "Visit recorded at baseline/endline survey"
+
+. label var patienttype "Existing/newly treated patient"
+
+. tab patienttype visittype, m
+
+                 |   Visit recorded at
+                 |   baseline/endline
+  Existing/newly |        survey
+ treated patient |  Baseline    Endline |     Total
+-----------------+----------------------+----------
+Existing patient |    26,571     23,658 |    50,229 
+-----------------+----------------------+----------
+           Total |    26,571     23,658 |    50,229 
+
+
+. /*
+>                  |   Visit recorded at
+>                  |   baseline/endline
+>   Existing/newly |        survey
+>  treated patient |  Baseline    Endline |     Total
+> -----------------+----------------------+----------
+> Existing patient |    26,577     23,669 |    50,246 
+> -----------------+----------------------+----------
+>            Total |    26,577     23,669 |    50,246 
+> */
+. 
+. * drop visits recorded before defined beginning of study (July 1, 2014)
+. drop if c_visitdate < td(01Jul2014)
+(2332 observations deleted)
+
+. *n=2332 dropped
+. 
+. 
+. **************************
+. *CREATE VISIT VARIABLES
+. **************************
+. *assign sequence number to visits
+. sort base_id c_visitdate
+
+. by base_id:gen vis_id = _n
+
+. label var vis_id "Sequence number of visit"
+
+. by base_id: egen num_vis=max(vis_id)
+
+. label var num_vis "Total number of visits"
+
+. 
+. sort base_id vis_id 
+
+. by base_id: egen first_date=min(c_visitdate)
+
+. by base_id: egen last_date=max(c_visitdate)
+
+. label var first_date "Date of first visit"
+
+. label var last_date "Date of last visit"
+
+. format first_date last_date %td
+
+. 
+. gen  first_vis=0
+
+. by base_id: replace first_vis=1 if _n==1
+(3150 real changes made)
+
+. gen  last_vis=0
+
+. replace last_vis=1 if vis_id==num_vis
+(3150 real changes made)
+
+. label var first_vis "Flag for first visit"
+
+. label var last_vis "Flag for last visit"
+
+. 
+. gen visit_mon= mofd(c_visitdate)-mofd(td(01Jul2014))
+
+. gen sched_mon= mofd(c_nextvisitdate)-mofd(td(01Jul2014))
+
+. label var visit_mon "Study month of visit"
+
+. label var sched_mon "Study month of next scheduled visit"
+
+. 
+. sort end_id c_visitdate
+
+. gen next_actual = c_visitdate[_n+1] if end_id==end_id[_n+1]
+(3150 missing values generated)
+
+. format next_actual %td
+
+. gen days_to_next = next_actual-c_visitdate
+(3150 missing values generated)
+
+. label var next_actual "Next actual visit date"
+
+. label var days_to_next "Number of days to next actual visit"
+
+. gen days_to_sched= c_nextvisitdate-c_visitdate
+
+. label var days_to_sched "Number of days to scheduled visit"
+
+. 
+. sort end_id c_visitdate
+
+. gen days_to_end=td(31Mar2016)-last_date
+
+. label var days_to_end "Number of days from last visit to end of study"
+
+. 
+. * merge with temp patient file instead of final file
+. merge m:1 base_id using "temp_3ie_exist_pts_without_continuous_variable.dta"
+(label cd4 already defined)
+(label agecat already defined)
+(label marstat already defined)
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                             1
+        from master                         0  (_merge==1)
+        from using                          1  (_merge==2)
+
+    matched                            47,897  (_merge==3)
+    -----------------------------------------
+
+. * 9 not matched
+. keep if _merge==3
+(1 observation deleted)
+
+. drop _merge
+
+. sort end_id c_visitdate
+
+. count
+47897
+
+. *n=47,906
+. 
+. *************************************************************************************************************
+. *VISIT CALCULATIONS FOR TS ANALSYSES 
+. *MISSED VISIT ON LAST VISIT IF NEXT SCHEDULED VISIT > # OF DAYS BEFORE MAR 31, 2016
+. *************************************************************************************************************
+. gen miss=0 if days_to_next~=.
+(3150 missing values generated)
+
+. replace miss=1 if days_to_next>days_to_sched & days_to_next~=.
+(15474 real changes made)
+
+. replace miss=1 if last_vis==1 & days_to_end>0
+(2499 real changes made)
+
+. 
+. gen miss3=0 if days_to_next~=.
+(3150 missing values generated)
+
+. replace miss3=1 if days_to_next-days_to_sched >2 & days_to_next~=.
+(10756 real changes made)
+
+. replace miss3=1 if last_vis==1 & days_to_end >2
+(2348 real changes made)
+
+. 
+. gen miss7=0 if days_to_next~=.
+(3150 missing values generated)
+
+. replace miss7=1 if days_to_next-days_to_sched >6 & days_to_next~=.
+(7058 real changes made)
+
+. replace miss7=1 if last_vis==1 & days_to_end >6
+(2325 real changes made)
+
+. 
+. gen miss15=0 if days_to_next~=.
+(3150 missing values generated)
+
+. replace miss15=1 if days_to_next-days_to_sched >14 & days_to_next~=.
+(5262 real changes made)
+
+. replace miss15=1 if last_vis==1 & days_to_end >14
+(1865 real changes made)
+
+. 
+. gen miss60=0 if days_to_next~=.
+(3150 missing values generated)
+
+. replace miss60=1 if days_to_next-days_to_sched >59 & days_to_next~=. 
+(926 real changes made)
+
+. replace miss60=1 if last_vis==1 & days_to_end >59
+(877 real changes made)
+
+. 
+. label var miss "delay between cleaned scheduled and next visits"
+
+. label var miss3 "delay of 3+d between cleaned scheduled and next visits"
+
+. label var miss7 "delay of 7+ between cleaned scheduled and next visits"
+
+. label var miss15 "delay of 15+d between cleaned scheduled and next visitss"
+
+. label var miss60 "delay of 60+d between cleaned scheduled and next visits"
+
+. 
+. * determine number of visits pre and post and if patient has a visit in both periods
+. gen pre_post=0
+
+. replace pre_post=1 if c_visitdate > td(23jul2015)
+(17264 real changes made)
+
+. by end_id: egen pre_first_date = min(c_visitdate) if pre_post==0
+(17264 missing values generated)
+
+. by end_id: egen post_first_date = min(c_visitdate) if pre_post==1
+(30633 missing values generated)
+
+. format pre_first_date post_first_date %td
+
+. gen first_pre=0
+
+. replace first_pre=1 if pre_first_date == c_visitdate
+(3150 real changes made)
+
+. gen first_post=0
+
+. replace first_post=1 if post_first_date == c_visitdate
+(2668 real changes made)
+
+. label var first_pre "Flag for first pre visit"
+
+. label var first_post "Flag for first post visit"
+
+. by end_id: egen num_pre = sum(1) if pre_first_date !=.
+(17264 missing values generated)
+
+. by end_id: egen num_post = sum(1) if post_first_date !=.
+(30633 missing values generated)
+
+. replace num_pre = 0 if num_pre==.
+(17264 real changes made)
+
+. replace num_post = 0 if num_post==.
+(30633 real changes made)
+
+. label var num_pre "Total number of visits pre"
+
+. label var num_post "Total number of visits post"
+
+. drop pre_first_date post_first_date
+
+. gen qual_pre_post = first_pre + first_post
+
+. label var qual_pre_post "Flag for first visit pre and post"
+
+. 
+. *define continuous pts as those having a visit after January 15th, 2016 (20468) 
+. gen temp=0
+
+. replace temp=1 if c_visitdate > td(31Dec2015)
+(6218 real changes made)
+
+. by end_id: egen continuous= max (temp)
+
+. drop temp
+
+. label var continuous "Flags pts with visit after 31Dec2015"
+
+. 
+. * flag visits after March 31 2016
+. gen  vis_apr_2016=0
+
+. replace vis_apr_2016=1 if c_visitdate>td(31Mar2016) & c_visitdate~=.
+(586 real changes made)
+
+. label var vis_apr_2016 "Flags visits after March 31, 2016"
+
+. sort end_id c_visitdate 
+
+. 
+. replace end=td(31Mar2016) if end==.
+(24249 real changes made)
+
+. rename end endline_date
+
+. 
+. * create interv, prepost variable, and last dates
+. gen interv=0
+
+. replace interv=1 if group=="Intervention"
+(28787 real changes made)
+
+. label define interv 0 "Control" 1 "Interv"
+
+. label values interv interv
+
+. label var interv "Intervention/control (0/1)"
+
+. 
+. * create post_its delivery variable
+. gen post_delivery = .
+(47897 missing values generated)
+
+. replace post_delivery=1 if c_visitdate >= patientdelivery & patientdelivery !=.
+(31589 real changes made)
+
+. replace post_delivery=0 if c_visitdate < patientdelivery  & patientdelivery !=.
+(10942 real changes made)
+
+. label var post_delivery "Visit is before/after delivery"
+
+. tabulate post_delivery, missing
+
+   Visit is |
+before/afte |
+ r delivery |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |     10,942       22.84       22.84
+          1 |     31,589       65.95       88.80
+          . |      5,366       11.20      100.00
+------------+-----------------------------------
+      Total |     47,897      100.00
+
+. /*
+>    Visit is |
+> before/afte |
+>  r delivery |      Freq.     Percent        Cum.
+> ------------+-----------------------------------
+>           0 |     10,943       22.84       22.84
+>           1 |     31,606       65.98       88.82
+>           . |      5,357       11.18      100.00
+> ------------+-----------------------------------
+>       Total |     47,906      100.00
+> */
+. 
+. 
+. tabulate group interv, missing
+
+             | Intervention/control
+             |         (0/1)
+       Group |   Control     Interv |     Total
+-------------+----------------------+----------
+     Control |    19,110          0 |    19,110 
+Intervention |         0     28,787 |    28,787 
+-------------+----------------------+----------
+       Total |    19,110     28,787 |    47,897 
+
+
+. /*
+>              | Intervention/control
+>              |         (0/1)
+>        Group |   Control     Interv |     Total
+> -------------+----------------------+----------
+>      Control |    19,115          0 |    19,115 
+> Intervention |         0     28,791 |    28,791 
+> -------------+----------------------+----------
+>        Total |    19,115     28,791 |    47,906 
+> */
+. 
+. * add annual dates and periods for time series
+. gen sched_yr=year(c_nextvisitdate)
+
+. gen sched_mo=month(c_nextvisitdate)
+
+. label var sched_yr "Calendar year of visit"
+
+. label var sched_mo "Calendar month of visit"
+
+. 
+. * identify visits out of study range
+. gen out_of_range=0
+
+. replace out_of_range=1 if sched_mon<1 | sched_mon>21
+(808 real changes made)
+
+. label var out_of_range "Scheduled visit date out of range"
+
+. tabulate out_of_range group, missing
+
+ Scheduled |
+visit date |
+    out of |         Group
+     range |   Control  Intervent |     Total
+-----------+----------------------+----------
+         0 |    18,830     28,259 |    47,089 
+         1 |       280        528 |       808 
+-----------+----------------------+----------
+     Total |    19,110     28,787 |    47,897 
+
+
+. /*
+>  Scheduled |
+> visit date |
+>     out of |         Group
+>      range |   Control  Intervent |     Total
+> -----------+----------------------+----------
+>          0 |    18,835     28,262 |    47,097 
+>          1 |       280        529 |       809 
+> -----------+----------------------+----------
+>      Total |    19,115     28,791 |    47,906 
+> */
+. 
+. gen post_its=0
+
+. replace post_its=1 if sched_mon > 13
+(16953 real changes made)
+
+. replace post_its=. if out_of_range==1
+(808 real changes made, 808 to missing)
+
+. label var post_its "Month is before/after 01Sep2015 for ITS analyses"
+
+. tabulate post_its group, missing
+
+  Month is |
+before/aft |
+        er |
+ 01Sep2015 |
+   for ITS |         Group
+  analyses |   Control  Intervent |     Total
+-----------+----------------------+----------
+         0 |    12,527     18,330 |    30,857 
+         1 |     6,303      9,929 |    16,232 
+         . |       280        528 |       808 
+-----------+----------------------+----------
+     Total |    19,110     28,787 |    47,897 
+
+
+. /*
+>   Month is |
+> before/aft |
+>         er |
+>  01Sep2015 |
+>    for ITS |         Group
+>   analyses |   Control  Intervent |     Total
+> -----------+----------------------+----------
+>          0 |    12,529     18,331 |    30,860 
+>          1 |     6,306      9,931 |    16,237 
+>          . |       280        529 |       809 
+> -----------+----------------------+----------
+>      Total |    19,115     28,791 |    47,906 
+> */
+. 
+. * post visits for ITS are those with scheduled dates after Sep 1 2015
+. * pre visits for ITS are those with scheduled dates through Jul 31 2015
+. * this version leaves Aug visits out of the pre period
+. gen post_its2=.
+(47897 missing values generated)
+
+. replace post_its2=0 if sched_mon < 13 
+(28715 real changes made)
+
+. replace post_its2=1 if sched_mon > 13
+(16953 real changes made)
+
+. replace post_its2=. if out_of_range==1
+(808 real changes made, 808 to missing)
+
+. label var post_its2 "Visit occurs before 31Jul2015/after 01Sep2015 for ITS analyses"
+
+. 
+. tabulate group post_its, summarize(miss) nostandard missing
+
+ Means and Frequencies of delay between cleaned scheduled and next visits
+
+             |     Month is before/after
+             |  01Sep2015 for ITS analyses
+       Group |         0          1          . |     Total
+-------------+---------------------------------+----------
+     Control | .39155424  .43984064  .73809524 | .40913904
+             |     12527       6275         84 |     18886
+-------------+---------------------------------+----------
+Intervention | .36966721  .33848797  .88970588 |  .3612835
+             |     18330       9894        136 |     28360
+-------------+---------------------------------+----------
+       Total | .37855268  .37782176  .83181818 | .38041316
+             |     30857      16169        220 |     47246
+
+. tabulate group post_its2, summarize(miss) nostandard missing
+
+ Means and Frequencies of delay between cleaned scheduled and next visits
+
+             |      Visit occurs before
+             | 31Jul2015/after 01Sep2015 for
+             |         ITS analyses
+       Group |         0          1          . |     Total
+-------------+---------------------------------+----------
+     Control | .39506915  .43984064  .37938144 | .40913904
+             |     11641       6275        970 |     18886
+-------------+---------------------------------+----------
+Intervention | .37246129  .33848797  .38539554 |  .3612835
+             |     16987       9894       1479 |     28360
+-------------+---------------------------------+----------
+       Total | .38165432  .37782176  .38301347 | .38041316
+             |     28628      16169       2449 |     47246
+
+. 
+. * create variables to identify pre and post periods for survival models
+. * flag pre and post visits
+. gen post_surv=0
+
+. replace post_surv=1 if c_nextvisitdate > td(23Jul2015)
+(19630 real changes made)
+
+. replace post_surv=. if out_of_range==1
+(808 real changes made, 808 to missing)
+
+. label var post_surv "Visit occurs before or after 23Jul2015 used for survival models"
+
+. 
+. * pre period for survival models starts with first visit 
+. * pre period runs through last visit before 23Jul2015 (or through 23Jul2015 if patient has a visit after that date)
+. * post period starts on Jul 24 2015 for patients still present
+. * post follow-up runs through last visit date before intervention
+. gen temp=c_visitdate if post_surv==0
+(19717 missing values generated)
+
+. gen pre_surv_start=first_date
+
+. by end_id: egen pre_surv_end=max(temp)
+
+. replace temp=.
+(28180 real changes made, 28180 to missing)
+
+. replace temp=c_visitdate if post_surv==1
+(18909 real changes made)
+
+. by end_id: egen post_surv_start=min(temp)
+(3390 missing values generated)
+
+. replace pre_surv_end = td(23Jul2015) if post_surv_start !=.
+(44507 real changes made)
+
+. replace post_surv_start = td(24Jul2015) if post_surv_start !=.
+(43985 real changes made)
+
+. by end_id: egen post_surv_end=max(temp)
+(3390 missing values generated)
+
+. format pre_surv_start pre_surv_end post_surv_start post_surv_end %td
+
+. label define prepost 0 "Pre" 1 "Post"
+
+. label values post_surv post_its prepost
+
+. drop temp
+
+. label var pre_surv_start "Date of first visit for pre survival models"
+
+. label var pre_surv_end "Date of last visit (if no post visit) or 23Jul2015 for pre survival models"
+
+. label var post_surv_start "24Jul2015 if any post visits or missing for post survival models"
+
+. label var post_surv_end "Date of last visit for post survival models"
+
+. 
+. * create month of last visit as offset from July 2014 (654)
+. gen last_month= mofd(last_date)-653
+
+. 
+. * drop original date variables
+. drop visitdate nextvisitdate
+
+. 
+. order interv base_id end_id num_vis vis_id post_its post_its2 post_surv first_date last_date first_vis ///
+>                 last_vis qual_pre_post continuous c_visitdate c_nextvisitdate visit_mon sched_mon sched_yr next_actual ///
+>                 miss miss3 miss7 miss15 miss60 days_to_sched days_to_next days_to_end arvdaysdispensed ///
+>                 c_art_start age_cat cd4_cat who_stage maritalstatus patientdelivery group district ///
+>                 fac_id fac_label patienttype visittype pre_surv_start pre_surv_end post_surv_start ///
+>                 post_surv_end early_visit no_endline vis_apr_2016 endline_date first_pre first_post num_pre num_post
+
+. 
+. save "existing pts\3ie_exist_vis.dta", replace
+file existing pts\3ie_exist_vis.dta saved
+
+. 
+. 
+. ******************************************************************************************
+. * USE THE PRECEDING DATASET FOR ITS AND SURVIVAL ANALYSIS
+. ******************************************************************************************
+. 
+. 
+. ******************************************************************************************
+. ******************************************************************************************
+. * SECTION 3: ADD FIRST AND LAST VISIT DATES AND CONTINUOUS VARIABLE TO PATIENT FILE
+. ******************************************************************************************
+. ******************************************************************************************
+. use "existing pts\3ie_exist_vis.dta", clear
+
+. keep if first_vis==1
+(44747 observations deleted)
+
+. keep end_id first_date last_date qual_pre_post continuous no_endline
+
+. order end_id first_date last_date qual_pre_post continuous no_endline
+
+. merge 1:1 end_id using temp_3ie_exist_pts_without_continuous_variable.dta
+(label cd4 already defined)
+(label agecat already defined)
+(label marstat already defined)
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                             1
+        from master                         0  (_merge==1)
+        from using                          1  (_merge==2)
+
+    matched                             3,150  (_merge==3)
+    -----------------------------------------
+
+. *n=3150 merged
+. keep if _merge==3
+(1 observation deleted)
+
+. table continuous
+
+----------------------
+Flags pts |
+with      |
+visit     |
+after     |
+31Dec2015 |      Freq.
+----------+-----------
+        0 |        749
+        1 |      2,401
+----------------------
+
+. * n=2402 out of 3150
+. drop _merge
+
+. 
+. save "existing pts\3ie_exist_pts.dta", replace
+file existing pts\3ie_exist_pts.dta saved
+
+. 
+.  
+. ******************************************************************************************
+. ******************************************************************************************
+. * SECTION 4: CREATE PDC DATA
+. ******************************************************************************************
+. ******************************************************************************************
+. *CALCULATE EXPOSURE DAYS BY CALENDAR MONTH
+. *FIRST VISIT TO NUMBER OF DAYS DISPENSED FOLLOWING LAST VISIT
+. use "existing pts\3ie_exist_vis.dta", clear
+
+. sort end_id first_date
+
+. rename first_date vis1
+
+. rename last_date vis2
+
+. order end_id vis1 vis2 arvdaysdispensed
+
+. * add number of days dispensed to last visit to allow runout
+. replace vis2=vis2+arvdaysdispensed
+(47895 real changes made)
+
+. keep if last_vis==1
+(44747 observations deleted)
+
+. keep end_id vis1 vis2
+
+. gen seq=_n
+
+. save temp_it, replace
+(note: file temp_it.dta not found)
+file temp_it.dta saved
+
+. reshape long vis, i( seq)
+(note: j = 1 2)
+
+Data                               wide   ->   long
+-----------------------------------------------------------------------------
+Number of obs.                     3150   ->    6300
+Number of variables                   4   ->       4
+j variable (2 values)                     ->   _j
+xij variables:
+                              vis1 vis2   ->   vis
+-----------------------------------------------------------------------------
+
+. tsset seq  vis
+       panel variable:  seq (weakly balanced)
+        time variable:  vis, 01jul2014 to 17jun2016, but with gaps
+                delta:  1 day
+
+. tsfill
+
+. gen mon = mofd(vis)
+
+. format mon %tm
+
+. rename vis day_at_risk
+
+. replace end_id=end_id[_n-1] if _j==.
+(1725002 real changes made)
+
+. drop seq _j
+
+. order end_id mon day_at_risk
+
+. save temp_days_at_risk_exp, replace
+(note: file temp_days_at_risk_exp.dta not found)
+file temp_days_at_risk_exp.dta saved
+
+. 
+. *CALCULATE DAYS DISPENSED DURING MONTH
+. use "existing pts\3ie_exist_vis.dta", clear
+
+. di _N
+47897
+
+. *n=47906
+. expand  (arvdaysdispensed) 
+(2 zero counts ignored; observations not deleted)
+(1434974 observations created)
+
+. sort end_id c_visitdate
+
+. by end_id c_visitdate: gen covered_day = c_visitdate if _n==1
+(1434974 missing values generated)
+
+. format covered_day %td
+
+. replace covered_day=covered_day[_n-1]+1 if covered_day==. 
+(1434974 real changes made)
+
+. sort end_id covered_day
+
+. by end_id covered_day: egen pills_available = count(covered_day)
+
+. tabulate pills_available
+
+pills_avail |
+       able |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |  1,373,589       92.63       92.63
+          2 |    108,268        7.30       99.93
+          3 |      1,014        0.07      100.00
+------------+-----------------------------------
+      Total |  1,482,871      100.00
+
+. 
+. /*
+> pills_avail |
+>        able |      Freq.     Percent        Cum.
+> ------------+-----------------------------------
+>           1 |  1,373,959       92.64       92.64
+>           2 |    108,234        7.30       99.93
+>           3 |        978        0.07      100.00
+> ------------+-----------------------------------
+>       Total |  1,483,171      100.00 
+> */
+. 
+. keep end_id covered_day pills_available
+
+. gen day_at_risk = covered_day
+
+. format day_at_risk %td
+
+. duplicates drop
+
+Duplicates in terms of all variables
+
+(54810 observations deleted)
+
+. merge 1:1 end_id day_at_risk using temp_days_at_risk_exp
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                       303,241
+        from master                         0  (_merge==1)
+        from using                    303,241  (_merge==2)
+
+    matched                         1,428,061  (_merge==3)
+    -----------------------------------------
+
+. sort end_id day_at_risk
+
+. drop _merge
+
+. replace pills_available=0 if pills_available==.
+(303241 real changes made)
+
+. gen extra_pills=0 
+
+. by end_id: replace extra_pills=extra_pills[_n-1]+(pills_available-1) if _n>1 & extra_pills[_n-1]+(pills_available-1)>=0
+(790477 real changes made)
+
+. by end_id: gen covered_day_spread = day_at_risk if covered_day!=. | extra_pills[_n-1]>0 
+(262095 missing values generated)
+
+. format covered_day_spread %td
+
+. collapse (count) days_at_risk=day_at_risk covered_days=covered_day_spread, by(end_id mon)
+
+. label var mon "Study month"
+
+. format days_at_risk covered_days %4.0g
+
+. gen PDC = covered_days/days_at_risk*100
+
+. label var PDC "Proportion of days covered in month"
+
+. gen PDCge95 = 0
+
+. replace PDCge95 = 1 if PDC>=95
+(39605 real changes made)
+
+. label var PDCge95 "PDC >= 95% during month month"
+
+. gen PDCge80 = 0
+
+. replace PDCge80 = 1 if PDC>=80
+(47809 real changes made)
+
+. label var PDCge80 "PDC >= 80% during month month"
+
+. format PDC PDCge95 PDCge80 %6.1f
+
+. save temp_PDC, replace
+(note: file temp_PDC.dta not found)
+file temp_PDC.dta saved
+
+. 
+. * MERGE PDC DATA WITH PATIENT AND DESIGN DATA
+. use "existing pts\3ie_exist_pts.dta", clear
+
+. tabulate no_endline
+
+    Patient |
+    with no |
+    endline |
+     record |
+  (dropout, |
+  transfer, |
+       lost |
+    record) |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |      2,897       91.97       91.97
+          1 |        253        8.03      100.00
+------------+-----------------------------------
+      Total |      3,150      100.00
+
+. merge 1:m end_id using temp_PDC
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                             0
+    matched                            59,845  (_merge==3)
+    -----------------------------------------
+
+. * all merge 59,858
+. drop _merge
+
+. 
+. * create interv, prepost variable, and last dates
+. gen sched_mon= mon - tm(2014m6)
+
+. label var sched_mon "Study month"
+
+. sort end_id sched_mon
+
+. tabulate group, missing
+
+       Group |      Freq.     Percent        Cum.
+-------------+-----------------------------------
+     Control |     23,590       39.42       39.42
+Intervention |     36,255       60.58      100.00
+-------------+-----------------------------------
+       Total |     59,845      100.00
+
+. /*
+>        Group |      Freq.     Percent        Cum.
+> -------------+-----------------------------------
+>      Control |     23,599       39.42       39.42
+> Intervention |     36,259       60.58      100.00
+> -------------+-----------------------------------
+>        Total |     59,858      100.00
+> */
+. 
+. * create post delivery variable
+. gen post_delivery = .
+(59845 missing values generated)
+
+. replace post_delivery=0 if mon < delivery_month & delivery_month !=.
+(12537 real changes made)
+
+. replace post_delivery=1 if mon >= delivery_month & delivery_month !=.
+(40347 real changes made)
+
+. label var post_delivery "Visit is before/after delivery"
+
+. tabulate post_delivery, missing
+
+   Visit is |
+before/afte |
+ r delivery |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |     12,537       20.95       20.95
+          1 |     40,347       67.42       88.37
+          . |      6,961       11.63      100.00
+------------+-----------------------------------
+      Total |     59,845      100.00
+
+. /*
+>    Visit is |
+> before/afte |
+>  r delivery |      Freq.     Percent        Cum.
+> ------------+-----------------------------------
+>           0 |     12,535       20.94       20.94
+>           1 |     40,373       67.45       88.39
+>           . |      6,950       11.61      100.00
+> ------------+-----------------------------------
+>       Total |     59,858      100.00
+> */
+. 
+. * identify visits out of study range
+. gen out_of_range=0
+
+. replace out_of_range=1 if sched_mon<1 | sched_mon>21
+(2711 real changes made)
+
+. label var out_of_range "Month out of range"
+
+. tabulate out_of_range group, missing
+
+ Month out |         Group
+  of range |   Control  Intervent |     Total
+-----------+----------------------+----------
+         0 |    22,617     34,517 |    57,134 
+         1 |       973      1,738 |     2,711 
+-----------+----------------------+----------
+     Total |    23,590     36,255 |    59,845 
+
+
+. /*
+>  Month out |         Group
+>   of range |   Control  Intervent |     Total
+> -----------+----------------------+----------
+>          0 |    22,627     34,518 |    57,145 
+>          1 |       972      1,741 |     2,713 
+> -----------+----------------------+----------
+>      Total |    23,599     36,259 |    59,858 
+> */
+. 
+. gen interv=0
+
+. replace interv=1 if group=="Intervention"
+(36255 real changes made)
+
+. label define interv 0 "Control" 1 "Interv"
+
+. label values interv interv
+
+. label var interv "Intervention/control (0/1)"
+
+. 
+. gen sched_yr=2015
+
+. replace sched_yr=2014 if sched_mon<7
+(15888 real changes made)
+
+. replace sched_yr=2016 if sched_mon>18
+(9868 real changes made)
+
+. gen sched_mo=sched_mon
+
+. replace sched_mo=sched_mon+6 if sched_mon<7
+(15888 real changes made)
+
+. replace sched_mo=sched_mon-6 if sched_mon>6 & sched_mon<19
+(34089 real changes made)
+
+. replace sched_mo=sched_mon-18 if sched_mon>18
+(9868 real changes made)
+
+. label var sched_yr "Calendar year of visit"
+
+. label var sched_mo "Calendar month of visit"
+
+. 
+. * post visits for ITS are those with scheduled dates after Sep 1 2015
+. * pre visits for ITS are those with scheduled dates through Aug 31 2015
+. gen post_its=0
+
+. replace post_its=1 if sched_mon > 13
+(22912 real changes made)
+
+. replace post_its=. if out_of_range==1
+(2711 real changes made, 2711 to missing)
+
+. label var post_its "Month is before/after 01Sep2015 for ITS analyses"
+
+. tabulate post_its group, missing
+
+  Month is |
+before/aft |
+        er |
+ 01Sep2015 |
+   for ITS |         Group
+  analyses |   Control  Intervent |     Total
+-----------+----------------------+----------
+         0 |    14,518     22,415 |    36,933 
+         1 |     8,099     12,102 |    20,201 
+         . |       973      1,738 |     2,711 
+-----------+----------------------+----------
+     Total |    23,590     36,255 |    59,845 
+
+
+. /*
+>   Month is |
+> before/aft |
+>         er |
+>  01Sep2015 |
+>    for ITS |         Group
+>   analyses |   Control  Intervent |     Total
+> -----------+----------------------+----------
+>          0 |    14,519     22,416 |    36,935 
+>          1 |     8,108     12,102 |    20,210 
+>          . |       972      1,741 |     2,713 
+> -----------+----------------------+----------
+>      Total |    23,599     36,259 |    59,858 
+> */
+. 
+. * post visits for ITS are those with scheduled dates after Sep 1 2015
+. * pre visits for ITS are those with scheduled dates through Jul 31 2015
+. * this version leaves Aug visits out of the pre period
+. gen post_its2=.
+(59845 missing values generated)
+
+. replace post_its2=0 if sched_mon < 13 
+(34195 real changes made)
+
+. replace post_its2=1 if sched_mon > 13
+(22912 real changes made)
+
+. replace post_its2=. if out_of_range==1
+(2711 real changes made, 2711 to missing)
+
+. label var post_its2 "Visit occurs before 31Jul2015/after 01Sep2015 for ITS analyses"
+
+. 
+. tabulate group post_its, summarize(PDC) nostandard missing
+
+       Means and Frequencies of Proportion of days covered in month
+
+             |     Month is before/after
+             |  01Sep2015 for ITS analyses
+       Group |         0          1          . |     Total
+-------------+---------------------------------+----------
+     Control |      86.7       85.3       94.4 |      86.5
+             |     14518       8099        973 |     23590
+-------------+---------------------------------+----------
+Intervention |      83.4       85.5       95.0 |      84.6
+             |     22415      12102       1738 |     36255
+-------------+---------------------------------+----------
+       Total |      84.7       85.4       94.8 |      85.4
+             |     36933      20201       2711 |     59845
+
+. tabulate group post_its2, summarize(PDC) nostandard missing
+
+       Means and Frequencies of Proportion of days covered in month
+
+             |      Visit occurs before
+             | 31Jul2015/after 01Sep2015 for
+             |         ITS analyses
+       Group |         0          1          . |     Total
+-------------+---------------------------------+----------
+     Control |      86.9       85.3       89.6 |      86.5
+             |     13434       8099       2057 |     23590
+-------------+---------------------------------+----------
+Intervention |      83.2       85.5       90.3 |      84.6
+             |     20761      12102       3392 |     36255
+-------------+---------------------------------+----------
+       Total |      84.7       85.4       90.0 |      85.4
+             |     34195      20201       5449 |     59845
+
+. 
+. order interv base_id end_id post_its post_its2 first_date last_date ///
+>                 continuous sched_mon sched_yr sched_mo PDC PDCge80 PDCge95 ///
+>                 c_art_start art_year age_cat cd4_cat who_stage maritalstatus post_delivery delivery_year ///
+>                 group district fac_id fac_label no_endline
+
+.                 
+. save "existing pts\3ie_exist_PDC.dta", replace
+file existing pts\3ie_exist_PDC.dta saved
+
+. 
+. erase temp_PDC.dta
+
+. erase temp_it.dta
+
+. erase temp_cleanedvisitendline.dta
+
+. erase temp_days_at_risk_exp.dta
+
+. erase temp_endvistoclean.dta
+
+. erase temp_3ie_exist_pts_without_continuous_variable.dta
+
+. erase temp_pt_exist.dta
+
+. 
+. log close
+      name:  <unnamed>
+       log:  c:\3ie\data\existing pts\3ie_prepare_existing_pts.log
+  log type:  text
+ closed on:  16 Sep 2016, 16:28:08
+-----------------------------------------------------------------------------------------------------------------------------------------------

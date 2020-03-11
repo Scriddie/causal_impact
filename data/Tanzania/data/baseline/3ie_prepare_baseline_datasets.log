@@ -1,0 +1,777 @@
+-----------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  c:\3ie\data\baseline\3ie_prepare_baseline_datasets.log
+  log type:  text
+ opened on:  16 Sep 2016, 15:35:51
+
+. 
+. *******************************
+. * 1 - prepare facility dataset
+. *******************************
+. clear
+
+. import excel "Facility_Records-baseline deidentified", ///
+>         sheet("Group assignment")  firstrow case(lower)
+
+. order group district facilitycode 
+
+. rename facilitycode fac_id
+
+. save "3ie_fac.dta", replace
+file 3ie_fac.dta saved
+
+. 
+. *****************************
+. * 2 - prepare patient dataset
+. *****************************
+. clear
+
+. import excel "Patient Data Profile-baseline deidentified", ///
+> sheet("Patient Records Reformatted") firstrow case(lower)
+
+. describe
+
+Contains data
+  obs:         3,191                          
+ vars:            10                          
+ size:       887,098                          
+-----------------------------------------------------------------------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-----------------------------------------------------------------------------------------------------------------------------------------------
+facilitycode    byte   %10.0g                 Facility Code
+studyid         double %10.0g                 Study ID
+birthdate       int    %td..                  Birth Date
+age             str4   %9s                    Age
+maritalstatus   str4   %9s                    Marital Status
+referredfrom    str5   %9s                    Referred From
+datestartart    int    %td..                  Date start ART
+whostageatstart str4   %9s                    WHO stage at start
+cd4countatstart str4   %9s                    CD4 count % at start
+datacollector~s str244 %244s                  Data Collector Comments
+-----------------------------------------------------------------------------------------------------------------------------------------------
+Sorted by:  
+     Note:  dataset has changed since last saved
+
+. rename studyid base_id
+
+. rename facilitycode fac_id
+
+. format base_id %16.0f
+
+. duplicates drop (fac_id base_id), force
+
+Duplicates in terms of fac_id base_id
+
+(14 observations deleted)
+
+. 
+. gen art_start=mofd(datestartart)
+
+. label variable art_start "Date started ART"
+
+. format art_start %tm
+
+. 
+. replace age="." if age=="null"
+(88 real changes made)
+
+. destring age, replace
+age has all characters numeric; replaced as byte
+(88 missing values generated)
+
+. gen age_cat=.
+(3177 missing values generated)
+
+. replace age_cat=1 if age<15
+(5 real changes made)
+
+. replace age_cat=2 if age<21 & age>14
+(214 real changes made)
+
+. replace age_cat=3 if age<31 & age>20
+(1596 real changes made)
+
+. replace age_cat=4 if age<41 & age>30
+(1196 real changes made)
+
+. replace age_cat=5 if age>40 & age~=.
+(78 real changes made)
+
+. label define age 1 "<15yo"2 "15-20yo" 3 "21-30yo"4"31-40yo"5 ">40yo"
+
+. label values age_cat age
+
+. label variable age_cat "Age category"
+
+. 
+. replace cd4countatstart="." if cd4countatstart=="null"
+(1592 real changes made)
+
+. destring cd4countatstart, replace
+cd4countatstart has all characters numeric; replaced as int
+(1592 missing values generated)
+
+. gen cd4_cat=.
+(3177 missing values generated)
+
+. replace cd4_cat=1 if cd4countatstart<200
+(447 real changes made)
+
+. replace cd4_cat=2 if cd4countatstart<501 & cd4countatstart>199
+(710 real changes made)
+
+. replace cd4_cat=3 if cd4countatstart>500 & cd4countatstart~=.
+(428 real changes made)
+
+. label define  cd4 1 "<200"2 "200-500" 3 ">500"
+
+. label values cd4_cat cd4
+
+. label variable cd4_cat  "cd4 count category when started ART"
+
+. 
+. replace whostageatstart="." if whostageatstart=="null"
+(331 real changes made)
+
+. destring whostageatstart, replace
+whostageatstart has all characters numeric; replaced as byte
+(331 missing values generated)
+
+. rename whostageatstart who_stage
+
+. label variable who_stage "WHO stage when started ART"
+
+. drop   age cd4countatstart datacollectorcomments ///
+> referredfrom birthdate
+
+. 
+. ***************************************************
+. * keep base_id as the unique pt identifier and drop duplicates
+. ***************************************************
+. sort base_id
+
+. duplicates tag (fac_id base_id), gen (tag)
+
+Duplicates in terms of fac_id base_id
+
+. tab tag
+
+        tag |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |      3,177      100.00      100.00
+------------+-----------------------------------
+      Total |      3,177      100.00
+
+. /* 
+> 
+>         tag |      Freq.     Percent        Cum.
+> ------------+-----------------------------------
+>           0 |      3,177      100.00      100.00
+> ------------+-----------------------------------
+>       Total |      3,177      100.00
+> */
+. 
+. duplicates tag (base_id), gen (tog)
+
+Duplicates in terms of base_id
+
+. list fac_id base_id tog if tog==1
+
+. 
+. di _N
+3177
+
+. *3177
+. 
+. * insert facility variables
+. merge m:1 fac_id using 3ie_fac.dta
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                             0
+    matched                             3,177  (_merge==3)
+    -----------------------------------------
+
+. drop _merge
+
+. save "pt.dta", replace
+(note: file pt.dta not found)
+file pt.dta saved
+
+. 
+. ****************************
+. * 3 - prepare visit dataset
+. ****************************
+. clear
+
+. import excel "Patient Visit-baseline deidentified", ///
+> sheet("Patient Visits Reformatted") firstrow case(lower)
+
+. rename studyid base_id
+
+. format base_id %16.0f
+
+. describe
+
+Contains data
+  obs:        55,616                          
+ vars:            14                          
+ size:     3,281,344                          
+-----------------------------------------------------------------------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-----------------------------------------------------------------------------------------------------------------------------------------------
+visitdate       int    %td..                  Visit Date
+nextvisitdate   int    %td..                  Next Visit date
+arvregimen      str2   %9s                    ARV Regimen
+anyotherregimen str25  %25s                   Any other regimen
+arvdaysdispen~d byte   %10.0g                 ARV days Dispensed
+arvreason       int    %10.0g                 ARV Reason
+arvadherence    str1   %9s                    ARV Adherence
+arvadherencep~n byte   %10.0g                 ARV Adherence Poor Reason
+followupstatus  str7   %9s                    Follow-up Status
+mostrecentlyd~n int    %td..                  Most recently dates where adherence discussed[Date 1]
+k               int    %td..                  Most recently dates where adherence discussed[Date 2]
+mostrecentlyd~t int    %td..                  Most recently dates where appointments discussed[Date 1]
+m               int    %td..                  Most recently dates where appointments discussed[Date 2]
+base_id         double %16.0f                 StudyID
+-----------------------------------------------------------------------------------------------------------------------------------------------
+Sorted by:  
+     Note:  dataset has changed since last saved
+
+. duplicates drop
+
+Duplicates in terms of all variables
+
+(27848 observations deleted)
+
+. drop followupstatus mostrecentlydateswhereadheren k ///
+> mostrecentlydateswhereappoint m
+
+. order base_id
+
+. sort base_id visitdate
+
+. save toclean, replace
+(note: file toclean.dta not found)
+file toclean.dta saved
+
+. di _N
+27768
+
+. * n=27,768
+. 
+. **************
+. *CLEAN VISITS
+. **************
+. use toclean, clear
+
+. * create clean (c_) variables
+. gen c_visitdate=visitdate
+
+. format c_visitdate %td
+
+. gen c_nextvisitdate=nextvisitdate
+
+. format c_nextvisitdate %td
+
+. gen double vis=dofd( visitdate)
+
+. gen c_mo=mofd(visitdate)
+
+. gen c_yr=yofd(visitdate)
+
+. gen c_next_yr=yofd(nextvisitdate)
+
+. order base_id visitdate nextvisitdate vis c_visitdate c_nextvisitdate c_mo c_yr c_next_yr
+
+. 
+. *drop duplicate visits
+. duplicates drop (base_id visitdate nextvisitdate), force
+
+Duplicates in terms of base_id visitdate nextvisitdate
+
+(9 observations deleted)
+
+. * n=9
+. 
+. * correct month typos on visit date
+. sort base_id c_visitdate
+
+. replace c_visitdate= c_visitdate[_n-1] + 30 ///
+>  if base_id==base_id[_n-1] & base_id==base_id[_n+1] & c_visitdate-c_visitdate[_n-1]<7 & c_visitdate[_n+1]-c_visitdate[_n-1]>59
+(76 real changes made)
+
+. 
+.  * correct year typos on visit date and nextvisitdate
+. sort base_id c_visitdate
+
+. replace c_visitdate=c_nextvisitdate -30 if base_id==base_id[_n+1] & c_visitdate[_n+1]-c_nextvisitdate<7 & vis<0
+(32 real changes made)
+
+. replace c_nextvisitdate=c_visitdate +30 if nextvisitdate<19000
+(22 real changes made)
+
+. 
+. * add one year:
+. replace c_nextvisitdate=c_nextvisitdate +365 if c_mo==659 & c_visitdate>c_nextvisitdate
+(108 real changes made)
+
+. replace c_nextvisitdate=c_nextvisitdate +365 if c_next_yr==2014 &  c_yr==2015 & c_visitdate>c_nextvisitdate & c_visitdate<20224
+(69 real changes made)
+
+. 
+. *assume vis occurred 30d before scheduled if 30days dispensed and vis<19000
+. replace c_visitdate=c_nextvisitdate-30 if arvdaysdispensed==30 & c_visitdate<19000
+(7 real changes made)
+
+. 
+. *assume scheduled visit 30d after visit if visit= 5/15/2015(20223)
+. *and 30 pills dispensed
+. sort base_id visitdate
+
+. replace c_nextvisitdate=c_visitdate + 30 if visitdate==20223 & arvdaysdispensed==30
+(50 real changes made)
+
+. 
+. * change scheduled if it is = May15, 2015 (20223) and visit is in 2014
+. replace c_nextvisitdate=c_visitdate + 30 if c_nextvisitdate==20223 &  c_yr==2014
+(8 real changes made)
+
+. 
+. * cannot clean if two dates are beyond 5/15/2015 or before  June2012
+. drop if c_visitdate>20223 & c_nextvisitdate>20223
+(79 observations deleted)
+
+. drop if c_visitdate<19146 & c_nextvisitdate<19146
+(1 observation deleted)
+
+. 
+. * drop what does not make sense and cannot be cleaned
+. drop if c_nextvisitdate< c_visitdate
+(285 observations deleted)
+
+. drop if c_visitdate==c_nextvisitdate
+(147 observations deleted)
+
+. sort base_id visitdate
+
+. drop if base_id~=base_id[_n-1] & base_id==base_id[_n+1]& c_visitdate[_n+1]-c_visitdate>150
+(73 observations deleted)
+
+. drop if c_nextvisitdate -c_visitdate>365
+(143 observations deleted)
+
+. 
+. *visits before August 2013 (643) do not make sense: drop them
+. drop if c_mo<643
+(61 observations deleted)
+
+. 
+. *drop duplicates and near duplicate visits <7d 
+. sort base_id c_visitdate
+
+. drop if base_id==base_id[_n-1] & c_visitdate-c_visitdate[_n-1]<7 
+(174 observations deleted)
+
+. 
+. *assume that  pills are given at each visit 
+. replace arvdaysdispensed=30 if (c_nextvisitdate-c_visitdate>15) & (c_nextvisitdate-c_visitdate)<45 & arvdaysdispensed==.
+(5210 real changes made)
+
+. replace arvdaysdispensed=60 if (c_nextvisitdate-c_visitdate>44) & (c_nextvisitdate-c_visitdate)<62 & arvdaysdispensed==.
+(257 real changes made)
+
+. di _N
+26796
+
+. * n=26,797
+. 
+. tab arvdaysdispensed,m
+
+   ARV days |
+  Dispensed |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |          2        0.01        0.01
+          3 |         12        0.04        0.05
+          4 |          1        0.00        0.06
+          5 |          2        0.01        0.06
+          7 |          2        0.01        0.07
+         14 |         45        0.17        0.24
+         15 |          1        0.00        0.24
+         21 |          1        0.00        0.25
+         30 |     25,920       96.73       96.98
+         38 |          5        0.02       97.00
+         40 |          2        0.01       97.00
+         60 |        517        1.93       98.93
+          . |        286        1.07      100.00
+------------+-----------------------------------
+      Total |     26,796      100.00
+
+. /*
+>    ARV days |
+>   Dispensed |      Freq.     Percent        Cum.
+> ------------+-----------------------------------
+>           0 |          2        0.01        0.01
+>           3 |         12        0.04        0.05
+>           4 |          1        0.00        0.06
+>           5 |          2        0.01        0.06
+>           7 |          2        0.01        0.07
+>          14 |         45        0.17        0.24
+>          15 |          1        0.00        0.24
+>          21 |          1        0.00        0.25
+>          30 |     25,921       96.73       96.98
+>          38 |          5        0.02       97.00
+>          40 |          2        0.01       97.00
+>          60 |        518        1.93       98.94
+>           . |        285        1.06      100.00
+> ------------+-----------------------------------
+>       Total |     26,797      100.00
+> */
+. replace arvdaysdispensed=30 if arvdaysdispensed==.
+(286 real changes made)
+
+. * 285 changes
+. 
+. **************************
+. *CREATE VISIT VARIABLES
+. **************************
+. drop vis c_mo c_yr c_next_yr
+
+. gen double vis=dofd( c_visitdate)
+
+. gen double sched=dofd( c_nextvisitdate)
+
+. *number visits per patient
+. sort base_id c_visitdate
+
+. by base_id:gen vis_id = _n
+
+. sort base_id vis_id 
+
+. by base_id: egen first=min(vis)
+
+. by base_id: egen last=max(vis)
+
+. by base_id: egen num_vis=max(vis_id)
+
+. gen  first_vis=0
+
+. replace first_vis=1 if first==vis
+(3169 real changes made)
+
+. gen  last_vis=0
+
+. replace last_vis=1 if last==vis
+(3169 real changes made)
+
+. *set first month of study as July 2014 (654) (first visitdate)  
+. global first_visit "653"
+
+. * create time variables in relation to the recorded visit  
+. gen xyear=yofd(c_visitdate)
+
+. gen xmonth=mofd(c_visitdate)
+
+. format xmonth %tm 
+
+. gen vis_month=xmonth - ${first_visit}
+
+. gen c_month=dofm(xmonth)
+
+. format c_month %td
+
+. 
+. sort base_id vis
+
+. gen next= vis[_n+1] if base_id==base_id[_n+1] 
+(3169 missing values generated)
+
+. gen sched_month= mofd(c_nextvisitdate)-${first_visit}
+
+. gen it= mofd(c_nextvisitdate)
+
+. format it %tm 
+
+. gen s_month=dofm(it) 
+
+. format s_month %td
+
+. drop it
+
+. order base_id vis sched next c_visitdate c_nextvisitdate ///
+> xyear xmonth vis_month sched_month vis_id first_vis last_vis
+
+. di _N
+26796
+
+. *26797
+. save visit, replace
+(note: file visit.dta not found)
+file visit.dta saved
+
+. 
+. *******************************************
+. *CLEAN ART_START
+. ******************************************
+. use visit, clear
+
+. keep base_id c_visitdate c_nextvisitdate first_vis xmonth
+
+. keep if  first_vis ==1
+(23627 observations deleted)
+
+. merge 1:1 base_id using pt.dta,keepusing (art_start)
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                            44
+        from master                        18  (_merge==1)
+        from using                         26  (_merge==2)
+
+    matched                             3,151  (_merge==3)
+    -----------------------------------------
+
+. * drop visits that have no patients and pts who have no visits
+. keep if _merge==3
+(44 observations deleted)
+
+. drop _merge
+
+. 
+. gen ort=art_start
+
+. gen c_mo=xmonth
+
+. gen it=xmonth-ort
+
+. sum it, d
+
+                             it
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%          -11            -71
+ 5%           -5            -47
+10%            0            -36       Obs                3151
+25%            0            -34       Sum of Wgt.        3151
+
+50%            5                      Mean           14.69597
+                        Largest       Std. Dev.      57.92902
+75%           15           1366
+90%           44           1368       Variance       3355.772
+95%           62           1368       Skewness       20.27342
+99%           87           1369       Kurtosis       471.1518
+
+. /*
+>                             it
+> -------------------------------------------------------------
+>       Percentiles      Smallest
+>  1%          -11            -71
+>  5%           -5            -47
+> 10%            0            -36       Obs                3151
+> 25%            0            -34       Sum of Wgt.        3151
+> 
+> 50%            5                      Mean           14.62107
+>                         Largest       Std. Dev.      57.93328
+> 75%           15           1366
+> 90%           44           1368       Variance       3356.265
+> 95%           62           1368       Skewness       20.27224
+> 99%           87           1369       Kurtosis       471.1177
+> -->assume all art_start that are >24 months before first visit should be
+> 5 months before
+> */
+. 
+. sort ort
+
+. replace art_start=c_mo if c_mo<ort
+(214 real changes made)
+
+. replace art_start=c_mo -5 if c_mo-ort>24
+(573 real changes made)
+
+. gen n=dofm(art_start)
+
+. format n % td
+
+. rename n c_art_start
+
+. label variable c_art_start "cleaned ART start for excel"
+
+. label variable art_start "cleaned ART start"
+
+. keep base_id art_start c_art_start
+
+. save it, replace
+(note: file it.dta not found)
+file it.dta saved
+
+. use pt.dta, clear
+
+. drop art_start
+
+. merge 1:1 base_id using  it
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                            26
+        from master                        26  (_merge==1)
+        from using                          0  (_merge==2)
+
+    matched                             3,151  (_merge==3)
+    -----------------------------------------
+
+. 
+. * drop pts who have no visits
+. keep if _merge==3
+(26 observations deleted)
+
+. * n=3151
+. drop _merge
+
+. order group district fac_id ///
+>  base_id art_start c_art_start maritalstatus ///
+>  who_stage age_cat cd4_cat datestartart
+
+. save "3ie_base_pt.dta", replace
+file 3ie_base_pt.dta saved
+
+. 
+. **************************************************
+. use visit, clear
+
+. merge m:1 base_id using 3ie_base_pt.dta
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                           152
+        from master                       152  (_merge==1)
+        from using                          0  (_merge==2)
+
+    matched                            26,644  (_merge==3)
+    -----------------------------------------
+
+. 
+. *drop visits that have no pts
+. keep if _merge==3
+(152 observations deleted)
+
+. drop _merge 
+
+. label var vis "c_visit date"
+
+. label var first "c_first visit date"
+
+. label var last "c_last visit date"
+
+. label var first_vis "c_check for first visit"
+
+. label var last_vis "c_check for last visit"
+
+. label var next "c_next actual visit date"
+
+. label var num_vis "c_number of visits"  
+
+. label var sched "scheduled visit date"
+
+. label var sched_month "c_month # of scheduled visit (first month is July 2014)"
+
+. label var vis_month "c_month #of visit (first month is July 2014)"
+
+. label var c_month "c_month of actual visit"
+
+. label var s_month "c_month of scheduled visit"
+
+. label var xmonth "c_year and month of visit"
+
+. label var xyear "c_year of visit"
+
+. label var c_visitdate "visit date corrected with stata"
+
+. label var c_nextvisitdate "next visit date corrected with stata"
+
+. label var vis_id "visit number"
+
+. describe
+
+Contains data from visit.dta
+  obs:        26,644                          
+ vars:            38                          16 Sep 2016 15:36
+ size:     4,689,344                          
+-----------------------------------------------------------------------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-----------------------------------------------------------------------------------------------------------------------------------------------
+base_id         double %16.0f                 StudyID
+vis             double %10.0g                 c_visit date
+sched           double %10.0g                 scheduled visit date
+next            float  %9.0g                  c_next actual visit date
+c_visitdate     float  %td                    visit date corrected with stata
+c_nextvisitdate float  %td                    next visit date corrected with stata
+xyear           float  %9.0g                  c_year of visit
+xmonth          float  %tm                    c_year and month of visit
+vis_month       float  %9.0g                  c_month #of visit (first month is July 2014)
+sched_month     float  %9.0g                  c_month # of scheduled visit (first month is July 2014)
+vis_id          float  %9.0g                  visit number
+first_vis       float  %9.0g                  c_check for first visit
+last_vis        float  %9.0g                  c_check for last visit
+visitdate       int    %td..                  Visit Date
+nextvisitdate   int    %td..                  Next Visit date
+arvregimen      str2   %9s                    ARV Regimen
+anyotherregimen str25  %25s                   Any other regimen
+arvdaysdispen~d byte   %10.0g                 ARV days Dispensed
+arvreason       int    %10.0g                 ARV Reason
+arvadherence    str1   %9s                    ARV Adherence
+arvadherencep~n byte   %10.0g                 ARV Adherence Poor Reason
+first           float  %9.0g                  c_first visit date
+last            float  %9.0g                  c_last visit date
+num_vis         float  %9.0g                  c_number of visits
+c_month         float  %td                    c_month of actual visit
+s_month         float  %td                    c_month of scheduled visit
+group           str12  %12s                   Group
+district        str18  %18s                   District
+fac_id          byte   %10.0g                 Facility Code
+art_start       float  %tm                    cleaned ART start
+c_art_start     float  %td                    cleaned ART start for excel
+maritalstatus   str4   %9s                    Marital Status
+who_stage       byte   %10.0g                 WHO stage when started ART
+age_cat         float  %9.0g       age        Age category
+cd4_cat         float  %9.0g       cd4        cd4 count category when started ART
+datestartart    int    %td..                  Date start ART
+tag             byte   %12.0g                 
+tog             byte   %12.0g                 
+-----------------------------------------------------------------------------------------------------------------------------------------------
+Sorted by:  
+     Note:  dataset has changed since last saved
+
+. order group district fac_id base_id ///
+>  c_visitdate c_nextvisitdate vis_id first_vis last_vis vis sched next ///
+>  xyear xmonth c_month s_month vis_month sched_month arvregimen anyotherregimen arvdaysdispensed ///
+>  arvreason arvadherence arvadherencepoorreason visitdate nextvisitdate
+
+. di _N
+26644
+
+. * n=26,645
+. 
+. save "3ie_base_visit.dta", replace
+file 3ie_base_visit.dta saved
+
+. 
+. ***********************
+. *remove temp files
+. ***********************
+. erase pt.dta
+
+. erase visit.dta
+
+. erase it.dta
+
+. erase toclean.dta
+
+. log close
+      name:  <unnamed>
+       log:  c:\3ie\data\baseline\3ie_prepare_baseline_datasets.log
+  log type:  text
+ closed on:  16 Sep 2016, 15:36:52
+-----------------------------------------------------------------------------------------------------------------------------------------------
