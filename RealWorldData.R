@@ -65,6 +65,14 @@ library(ggplot2)
 pth = paste("data/Tanzania/data/baseline/", "3ie_base_visit.dta", sep="")
 df = data.frame(read.dta(pth))
 
+# TODO: 
+# group and interv column are the same
+# fac_id and fac_label are the same
+# maritalstatus is same as marstat
+# What's the difference between baseline and endline
+# we probably dont need any of the other miss columns
+# Beginning of post-intervention: 1st September 2015
+
 df_handy = df %>% 
   dplyr::select(group, c_month)
 
@@ -79,7 +87,8 @@ aggregate(df$miss, by=list(df$interv), FUN=sum, na.rm=TRUE)
 # for proper plot, sum up by month
 
 df$plt_visit_date = as.factor(format(as.Date(df$c_visitdate, format="%Y-%m-%d"), "%Y-%m"))
-df_plt = aggregate(df$miss, by=list(df$interv, df$plt_visit_date), FUN=sum)
+df_plt = aggregate(df$miss, by=list(df$interv, df$plt_visit_date), FUN=mean)
+
 
 plt = ggplot(df_plt) + 
   geom_point(aes(x=Group.2, y=x, color=Group.1))
