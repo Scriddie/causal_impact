@@ -62,11 +62,15 @@ post.period <- as.Date(c("2015-09-01", "2016-06-01"))
 impact = CausalImpact((zoo(cbind(y_interv, x_rct), x_rct)),
                       pre.period, post.period)
 plot(impact)
+summary(impact)
+summary(impact, "report")
 
 # feed to CausalImact including counterfactuals
-impact = CausalImpact((zoo(cbind(y_interv, y_control, x_rct), x_rct)),
+impact_counterfact = CausalImpact((zoo(cbind(y_interv, y_control, x_rct), x_rct)),
                       pre.period, post.period)
-plot(impact)
+plot(impact_counterfact)
+summary(impact_counterfact)
+summary(impact_counterfact, "report")
 
 
 
