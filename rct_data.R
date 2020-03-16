@@ -67,6 +67,7 @@ plot(impact)
 impact = CausalImpact((zoo(cbind(y_interv, y_control, x_rct), x_rct)),
                       pre.period, post.period)
 plot(impact)
+summary(impact)
 
 
 
@@ -74,4 +75,5 @@ plot(impact)
 # TODO: interpred difference between graph with counterfactuals and without, does it match expectations
 # given how their package works?
 # TODO: Do results including counterfactuals come close to results in report? Check thoroughtly!
+# check summary and graph
 
