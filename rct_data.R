@@ -19,8 +19,13 @@ df = df_raw %>%
   dplyr::select(c(interv, c_visitdate, miss)) %>% 
   mutate(c_visitdate = as.Date(c_visitdate, format="%Y-%m-%d"),
          interv = ifelse(interv=="Interv", 1, 0)) %>% 
-  mutate(month_visit = (format(c_visitdate, "%Y-%m-01"))) %>% 
+  mutate(month_visit = (format(c_visitdate, "%Y-%m-01")),
+         ones = 1) %>% 
   mutate(post_intervention = ifelse(c_visitdate < as.Date("2015-09-01"), 1, 0))
+
+# visualize complete time series -> we see strong periodicity and a low number of obs near end
+ggplot(data=df, aes(x=c_visitdate, y=ones, color=interv)) + 
+  stat_summary(fun.y=sum, geom="line")
 
 # create separate dataframes for treatment and control
 df_interv = df %>% 
@@ -43,34 +48,30 @@ monthly_control = get_monthly_df(df_control, "y_control")
 x_rct = as.Date(monthly_interv$x)
 y_interv = monthly_interv$y_interv
 y_control = monthly_control$y_control
-ci_data <- (zoo(cbind(y_interv, y_control, x_rct), x_rct))
 
 # intervention vs control
 ggplot(ci_data) +
   geom_line(aes(x_rct, y_control, color=0)) +
   geom_line(aes(x_rct, y_interv, color=1))
 
-# feed into CausalImpact
+# beginning of intervention
 pre.period <- as.Date(c("2014-01-01", "2015-08-31"))
 post.period <- as.Date(c("2015-09-01", "2016-06-01"))
-impact = CausalImpact(ci_data, pre.period, post.period)
-plot(impact) 
 
+# feed to CausalImpact without counterfactuals
+impact = CausalImpact((zoo(cbind(y_interv, x_rct), x_rct)),
+                      pre.period, post.period)
+plot(impact)
 
-# TODO: 
-# What's the difference between baseline and endline
-
-
-
-
-### US voter data
-# pth = paste("data/Tanzania/data/baseline/", "3ie_base_visit.dta", sep="")
-# df_raw= data.frame(read.dta(pth))
+# feed to CausalImact including counterfactuals
+impact = CausalImpact((zoo(cbind(y_interv, y_control, x_rct), x_rct)),
+                      pre.period, post.period)
+plot(impact)
 
 
 
-
-
-
-
+# TODO: What's the difference between baseline and endline?
+# TODO: interpred difference between graph with counterfactuals and without, does it match expectations
+# given how their package works?
+# TODO: Do results including counterfactuals come close to results in report? Check thoroughtly!
 
