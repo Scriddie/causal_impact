@@ -76,4 +76,10 @@ summary(impact)
 # given how their package works?
 # TODO: Do results including counterfactuals come close to results in report? Check thoroughtly!
 # check summary and graph
+# TODO: outline end of intervention period
+# TODO: instead of the actual counterfactuals, give it some of the other variables form the data set as 
+# covariates - Can we say the same as "Using purely observational variables led to the same substantive 
+# conclusions"??
+# TODO: use some other variables from data set to estimate causal impact of intervention on control group!
+# TODO: try giving it some random nonesense as covariate time series (e.g. Quandl library)
 

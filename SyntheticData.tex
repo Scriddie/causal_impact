@@ -1,0 +1,278 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={CausalImpact},
+  pdfauthor={Sai Koneru},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+
+\title{CausalImpact}
+\author{Sai Koneru}
+\date{3/2/2020}
+
+\begin{document}
+\maketitle
+
+\hypertarget{basic-usage-of-causal-impact-copied-from-their-website}{%
+\subsection{Basic usage of Causal impact copied from their
+website}\label{basic-usage-of-causal-impact-copied-from-their-website}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(CausalImpact)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required package: bsts
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: BoomSpikeSlab
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: Boom
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: MASS
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'Boom'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:stats':
+## 
+##     rWishart
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'BoomSpikeSlab'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:stats':
+## 
+##     knots
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: zoo
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'zoo'
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:base':
+## 
+##     as.Date, as.Date.numeric
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: xts
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'bsts'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:BoomSpikeSlab':
+## 
+##     SuggestBurn
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{1}\NormalTok{)}
+\NormalTok{x1 <-}\StringTok{ }\DecValTok{100} \OperatorTok{+}\StringTok{ }\KeywordTok{arima.sim}\NormalTok{(}\DataTypeTok{model =} \KeywordTok{list}\NormalTok{(}\DataTypeTok{ar =} \FloatTok{0.999}\NormalTok{), }\DataTypeTok{n =} \DecValTok{100}\NormalTok{)}
+\NormalTok{y <-}\StringTok{ }\FloatTok{1.2} \OperatorTok{*}\StringTok{ }\NormalTok{x1 }\OperatorTok{+}\StringTok{ }\KeywordTok{rnorm}\NormalTok{(}\DecValTok{100}\NormalTok{)}
+\NormalTok{y[}\DecValTok{71}\OperatorTok{:}\DecValTok{100}\NormalTok{] <-}\StringTok{ }\NormalTok{y[}\DecValTok{71}\OperatorTok{:}\DecValTok{100}\NormalTok{] }\OperatorTok{+}\StringTok{ }\DecValTok{10}
+\NormalTok{data <-}\StringTok{ }\KeywordTok{cbind}\NormalTok{(x1, y)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{plotting-the-data-created}{%
+\subsection{Plotting the data created}\label{plotting-the-data-created}}
+
+\includegraphics{SyntheticData_files/figure-latex/plot data-1.pdf} \#\#
+Run Causal Impact
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pre.period <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{, }\DecValTok{70}\NormalTok{)}
+\NormalTok{post.period <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\DecValTok{71}\NormalTok{, }\DecValTok{100}\NormalTok{)}
+\NormalTok{impact <-}\StringTok{ }\KeywordTok{CausalImpact}\NormalTok{(data, pre.period, post.period)}
+\KeywordTok{plot}\NormalTok{(impact)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{SyntheticData_files/figure-latex/RunCausalImpact-1.pdf}
+
+\hypertarget{reproducing-theoritical-simulation}{%
+\subsection{Reproducing Theoritical
+Simulation}\label{reproducing-theoritical-simulation}}
+
+Created two regression coefficients,two sinusoidal covariates and a
+local level Initialized covariates to 1 and level to 0 as explained in
+the paper Intervention occured at 389 days later by multiplying it with
+e
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(CausalImpact)}
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{0}\NormalTok{)}
+\NormalTok{data =}\StringTok{ }\OtherTok{NULL}
+\NormalTok{linear_values =}\StringTok{ }\OtherTok{NULL}
+\NormalTok{linear_values[}\DecValTok{1}\NormalTok{] =}\StringTok{ }\DecValTok{0}
+\NormalTok{beta1 =}\StringTok{ }\OtherTok{NULL}
+\NormalTok{beta1[}\DecValTok{1}\NormalTok{] =}\StringTok{ }\DecValTok{1}
+\NormalTok{beta2 =}\StringTok{ }\OtherTok{NULL}
+\NormalTok{beta2[}\DecValTok{1}\NormalTok{] =}\StringTok{ }\DecValTok{1}
+\NormalTok{cov1 =}\StringTok{ }\OtherTok{NULL}
+\NormalTok{cov2 =}\StringTok{ }\OtherTok{NULL}
+\NormalTok{cov1[}\DecValTok{1}\NormalTok{] =}\StringTok{ }\KeywordTok{sin}\NormalTok{(pi}\OperatorTok{/}\DecValTok{45}\NormalTok{)}
+\NormalTok{cov2[}\DecValTok{1}\NormalTok{] =}\StringTok{ }\KeywordTok{sin}\NormalTok{(pi}\OperatorTok{/}\DecValTok{180}\NormalTok{)}
+\ControlFlowTok{for}\NormalTok{(i }\ControlFlowTok{in} \DecValTok{2}\OperatorTok{:}\DecValTok{488}\NormalTok{)\{}
+\NormalTok{  linear_values[i] =}\StringTok{ }\KeywordTok{rnorm}\NormalTok{(}\DataTypeTok{n =} \DecValTok{1}\NormalTok{,}\DataTypeTok{mean =}\NormalTok{ linear_values[i}\DecValTok{-1}\NormalTok{],}\DataTypeTok{sd =} \FloatTok{0.1}\NormalTok{)}
+\NormalTok{  beta1[i] =}\StringTok{ }\KeywordTok{rnorm}\NormalTok{(}\DataTypeTok{n =} \DecValTok{1}\NormalTok{,}\DataTypeTok{mean =}\NormalTok{ beta1[i}\DecValTok{-1}\NormalTok{],}\DataTypeTok{sd=} \FloatTok{0.1}\NormalTok{)}
+\NormalTok{  beta2[i] =}\StringTok{ }\KeywordTok{rnorm}\NormalTok{(}\DataTypeTok{n =} \DecValTok{1}\NormalTok{,}\DataTypeTok{mean =}\NormalTok{ beta2[i}\DecValTok{-1}\NormalTok{],}\DataTypeTok{sd=} \FloatTok{0.1}\NormalTok{)}
+\NormalTok{  cov1[i] =}\StringTok{ }\KeywordTok{sin}\NormalTok{((pi}\OperatorTok{*}\NormalTok{i)}\OperatorTok{/}\DecValTok{45}\NormalTok{)}
+\NormalTok{  cov2[i] =}\StringTok{ }\KeywordTok{sin}\NormalTok{((pi}\OperatorTok{*}\NormalTok{i)}\OperatorTok{/}\DecValTok{180}\NormalTok{)}
+\NormalTok{\}}
+\NormalTok{output_true =}\DecValTok{20} \OperatorTok{+}\StringTok{ }\NormalTok{linear_values }\OperatorTok{+}\StringTok{ }\KeywordTok{rnorm}\NormalTok{(}\DataTypeTok{n =} \DecValTok{1}\NormalTok{, }\DataTypeTok{mean =} \DecValTok{0}\NormalTok{, }\DataTypeTok{sd =} \FloatTok{0.1}\NormalTok{) }\OperatorTok{+}\StringTok{ }\NormalTok{(cov1 }\OperatorTok{*}\StringTok{ }\NormalTok{beta1) }\OperatorTok{+}\StringTok{ }\NormalTok{(cov2 }\OperatorTok{*}\StringTok{ }\NormalTok{beta2)}
+\NormalTok{output_intervention =}\StringTok{ }\NormalTok{output_true }
+\NormalTok{output_intervention[}\DecValTok{389}\OperatorTok{:}\DecValTok{488}\NormalTok{] =}\StringTok{ }\NormalTok{output_intervention[}\DecValTok{389}\OperatorTok{:}\DecValTok{488}\NormalTok{]}\OperatorTok{*}\KeywordTok{exp}\NormalTok{(}\DecValTok{1}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{running-causal-impact-on-simulated-data}{%
+\subsection{Running Causal Impact on simulated
+data}\label{running-causal-impact-on-simulated-data}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pre.period =}\StringTok{ }\KeywordTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{389}\NormalTok{)}
+\NormalTok{post.period =}\StringTok{ }\KeywordTok{c}\NormalTok{(}\DecValTok{390}\NormalTok{,}\DecValTok{488}\NormalTok{)}
+\NormalTok{data =}\StringTok{ }\KeywordTok{cbind}\NormalTok{(output_intervention,output_true)}
+\NormalTok{impact <-}\StringTok{ }\KeywordTok{CausalImpact}\NormalTok{(data, pre.period, post.period)}
+\KeywordTok{plot}\NormalTok{(impact)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{SyntheticData_files/figure-latex/RunCausalImpactonSimulatedData-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{matplot}\NormalTok{(output_true,}\DataTypeTok{main =} \StringTok{"True Output"}\NormalTok{,}\DataTypeTok{col =} \StringTok{"green"}\NormalTok{,}\DataTypeTok{type =} \StringTok{"l"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{SyntheticData_files/figure-latex/RunCausalImpactonSimulatedData-2.pdf}
+
+\#\#TODO Add dates to the x-axis which is causing some bugs
+
+\end{document}
