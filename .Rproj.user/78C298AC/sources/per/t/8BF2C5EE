@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1584373070999.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2194443787",
+    "id" : "8BF2C5EE",
+    "lastKnownWriteTime" : 1583917882,
+    "last_content_update" : 1583917882,
+    "path" : "C:/Users/alexa/OneDrive/Documents/Studies/AI/CompStat/Project/causal_impact/data/Xu_paper/rep_turnout.R",
+    "project_path" : "data/Xu_paper/rep_turnout.R",
+    "properties" : {
+        "cursorPosition" : "15,26",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

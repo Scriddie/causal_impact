@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1584374760360.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2761258810",
+    "id" : "3C73E023",
+    "lastKnownWriteTime" : 1584375757,
+    "last_content_update" : 1584375757444,
+    "path" : "C:/Users/alexa/OneDrive/Documents/Studies/AI/CompStat/Project/causal_impact/rct_data.R",
+    "project_path" : "rct_data.R",
+    "properties" : {
+        "cursorPosition" : "65,31",
+        "scrollLine" : "45"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
