@@ -80,8 +80,7 @@ pre.period = c(1, 14)  # agg_interv$year[15] is 1976
 post.period = c(15, 19)
 impact = CausalImpact(data, pre.period, post.period)
 plot(impact)
-
-
+ggsave("figures/CI_voter_data.pdf", plot(impact), device="pdf", width=14, height=4)
 
 ### ----------------------------------------------------------------------
 
@@ -123,7 +122,7 @@ stopifnot(is.null(out$eff.cnt))
 # plot(out.syn2, type = "counterfactual")
 
 ## GSC ##
-# pdf("figures/fg_edr_main_syn.pdf",width=14,height=5)
+pdf("figures/fg_edr_main_syn.pdf",width=14,height=5)
 ## counterfactual
 par(mfcol=c(1,2),mar=c(4,4,1,1),lend=1)
 time<-c(1:19)
