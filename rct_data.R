@@ -34,9 +34,9 @@ df_control = df %>%
   filter(interv==0)
 
 # plot group averages over time
-get_monthly_df = function(param_df, c_name){
+get_monthly_df = function(param_df, col_name){
   data = aggregate(param_df$miss, by=list(param_df$month_visit), FUN=mean) %>% 
-      transmute(!!c_name := x, x = Group.1) %>% 
+      transmute(!!col_name := x, x = Group.1) %>% 
       drop_na()
   return(data)
 }

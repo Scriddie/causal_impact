@@ -1,3 +1,139 @@
+library(tidyverse)
+library(CausalImpact)
+library(foreign)
+library(ggplot2)
+
+
+library(gsynth)
+data(gsynth)  # loads simdata and tournout
+
+df_turnout = turnout
+
+# lil plotling function
+plt_ts = function(df){
+  ggplot(data=df) + 
+    geom_point(aes(x=year, y=turnout, color=interv)) # + 
+    # scale_x_continuous(limits=c(-13, 4))
+}
+
+get_treatment_start = function(df){
+  # if we wanted to do the same scaling as the guy
+  for (i in unique(df$abb)){
+    df_state = df %>% 
+      filter(abb==i) %>% 
+      filter(policy_edr==1)
+    policy_start = min(df_state$year, 9999)
+    if (policy_start != 9999){
+      print(paste(i, "started in", policy_start))
+    }
+    # TODO: reset year conditinally (won't work with CausalImpact anymore)
+    # df_turnout
+  }
+}
+
+get_treatment_start(df_turnout)
+
+# ## ID, NH, WY; 1996
+# df_medium = df_turnout %>% 
+#   filter(abb %in% c("ID", "NH", "WY"))
+# plt_ts(df_medium)
+# 
+# ## MT, IA, CT; 2008
+# df_late = df_turnout %>% 
+#   filter(abb %in% c("MT", "IA", "CT"))
+# plt_ts(df_late)
+
+### For now analysis only for the original states: ME, MN, WI; 1976
+df_early = df_turnout %>% 
+  mutate(interv = ifelse(abb %in% c("ME", "MN", "WI"), 1, 0)) %>% 
+  dplyr::select(year, turnout, interv)
+df_early %>% head
+plt_ts(df_early)
+
+# TODO: do some sanity checks to see why the guys data looks different??
+df_sanity = df_early
+df_sanity_agg = aggregate(df_sanity$turnout, by=list(df_sanity$year), FUN=mean) %>% 
+  transmute(year=Group.1, turnout=x, interv=3)
+plt_ts(df_sanity_agg)
+
+
+# aggregate data frame by year (to be done for treatment and control)
+agg_df = function(df, col_name){
+  df_pp = aggregate(df$turnout, by=list(df$year), FUN=mean) %>% 
+    transmute(
+      !!col_name:=x,
+      year=Group.1
+    )
+  return(df_pp)
+}
+
+# create separate data frames for control and intervention
+df_interv = df_early %>% 
+  filter(interv==1) %>% 
+  dplyr::select(year, turnout)
+df_control = df_early %>% 
+  filter(interv==0) %>% 
+  dplyr::select(year, turnout)
+
+agg_interv = agg_df(df_interv, "turnout_interv")
+head(agg_interv)
+agg_control = agg_df(df_control, "turnout_control")
+head(agg_control)
+
+# bing into format expected by CausalImpact
+x = seq_along(as.numeric(agg_interv$year))
+y_interv = agg_interv$turnout_interv
+y_control = agg_control$turnout_control
+data = cbind(y_interv, y_control, x)
+head(data)
+
+# beginning of intervention for early df
+pre.period = c(1, 14)  # agg_interv$year[15] is 1976
+post.period = c(15, 17)
+impact = CausalImpact(data, pre.period, post.period)
+plot(impact)
+
+
+# TODO: run the guy's analysis on the same subset as ours!!!
+# (reason being, we need to match times bc of bsts, we can't just throw all the pre-treatment stuff 
+# together)
+### This is what the guy does, this is what we want to reproduce
+
+## GSC ##
+pdf("figures/fg_edr_main_syn.pdf",width=14,height=5)
+## counterfactual
+par(mfcol=c(1,2),mar=c(4,4,1,1),lend=1)
+out<-out.syn1
+time<-c(-13:4)
+plot(1,type="n",xlab="",ylab='',axes=F,xlim=range(time),ylim=c(55,75))
+box()
+axis(1,at=seq(-12,4,2));mtext("Term Relative to Reform",1,2.5,cex=1.5)
+axis(2);mtext("Turnout %",2,2.5,cex=1.5)
+abline(v=0,col="gray",lwd=2,lty=2)
+lines(time,out$Y.tr.cnt[1:18],lwd=2)
+lines(time,out$Y.ct.cnt[1:18],col=1,lty=5,lwd=2)
+legend("topleft",legend=c("Treated Average","Estimated Y(0) Average for the Treated"),cex=1.5,
+       seg.len=2, col=c(1,1),lty=c(1,5),lwd=2,bty="n") 
+## gap
+newx<-c(-13:4)
+plot(1,type="n",xlab="",ylab='',axes=F,xlim=c(-13,4),ylim=c(-8,8))
+box()
+axis(1,at=seq(-12,4,2));mtext("Term relative to reform",1,2.5,cex=1.5)
+axis(2,at=seq(-8,8,4));mtext("Turnout %",2,2.5,cex=1.5)
+abline(v=0,col="gray",lty=2,lwd=2)
+abline(h=0,col="gray20",lty=2,lwd=1)
+polygon(c(rev(newx), newx), c(rev(out$est.att[1:18,3]), out$est.att[1:18, 4]),
+        col = "#55555530", border = NA)
+lines(newx,out$est.att[1:18,1],col=1,lty=1,lwd=2)
+legend("topleft",legend=c("Estimated ATT","95% Confidence Intervals"), cex=1.5, seg.len=2,
+       col=c(1,"#55555530"),lty=c(1,5),lwd=c(2,20),bty="n")
+graphics.off()
+
+
+
+
+
+### ----------------------------------------------------------------------
 
 ## Generalized Synthetic Control Method
 ## Replicatino Material: EDR on Voter Turnout
@@ -90,7 +226,7 @@ sub3 <- gsynth(turnout ~ policy_edr + policy_mail_in + policy_motor,
 ##############################
 
 ## DID ##
-pdf("fg_edr_main_did.pdf",width=14,height=5)
+pdf("figures/fg_edr_main_did.pdf",width=14,height=5)
 ## counterfactual
 par(mfcol=c(1,2),mar=c(4,4,1,1),lend=1)
 out<-out.did3
@@ -121,7 +257,7 @@ graphics.off()
 
 
 ## GSC ##
-pdf("fg_edr_main_syn.pdf",width=14,height=5)
+pdf("figures/fg_edr_main_syn.pdf",width=14,height=5)
 ## counterfactual
 par(mfcol=c(1,2),mar=c(4,4,1,1),lend=1)
 out<-out.syn1
@@ -156,7 +292,7 @@ graphics.off()
 
 ## factors
 
-pdf("fg_edr_factors.pdf")
+pdf("figures/fg_edr_factors.pdf")
 out<-out.syn2
 L.co<-out$lambda.co
 norm<-sqrt(diag(t(L.co)%*%L.co)/(out$N-out$Ntr))
@@ -175,7 +311,7 @@ graphics.off()
 
 ## loadings
 
-pdf("fg_edr_loadings2.pdf")
+pdf("figures/fg_edr_loadings2.pdf")
 out<-out.syn2
 par(mar=c(3,3,1,1),lend=1)
 plot(1,main="",type="n",xlab="",ylab="",axes=FALSE,xlim=c(-20,20),ylim=c(-5,6))
@@ -199,7 +335,7 @@ graphics.off()
 ## Figiure A5: Raw Data
 ##############################
 
-pdf("fg_edr_raw.pdf",width=10)
+pdf("figures/fg_edr_raw.pdf",width=10)
 out<-out.syn2
 time<-out$time
 Y<-out$Y.dat
@@ -233,48 +369,48 @@ states<-out$id.tr
 
 for (abb in states) { # treated states
   
-    id<-which(out$id.tr==abb)
-    t0<-T0[id]
-    
-    pdf(paste("fg_edr_case_",abb,".pdf",sep=""),width=14,height=5)
-    par(mfcol=c(1,2),mar=c(4,4,1,1),lend=1)
-    
-    ## counterfactual
-    yrg<-range(c(out$Y.tr[,id],out$Y.ct[,id]))
-    ylim=c(yrg[1]-10,yrg[2]+5)
-    plot(1,type="n",xlab="",ylab='',axes=F,xlim=c(1920,2016),ylim=ylim)
-    box()
-    axis(1,at=seq(1920,2016,8));mtext("Year",1,2.5,cex=1.5)
-    axis(2);mtext("Turnout %",2,2,cex=1.5)
-    abline(v=time[t0],col="gray",lwd=2)
-    lines(time,out$xi+mean(out$Y.tr[,id]),col="gray50",lwd=2,lty=5)
-    lines(time,out$Y.tr[,id],lwd=3)  
-    lines(time,out$Y.ct[,id],col="gray50",lty=1,lwd=2)
-    text(1925,yrg[2]+2,abb,cex=2)
-    legend("bottomright",
-           legend=c("Actual Outcome","Estimated Y(0) (DID)","Estimated Y(0) (GSC)"),
-           cex=1.3, seg.len=2, col=c(1,"gray50","gray50"),lty=c(1,5,1),
-           lwd=c(3,2,2),bty="n")  
-    
-    yrg<-range(c(out$est.ind[,,id],out$Y.tr[,id]-out$xi-mean(out$Y.tr[,id])))
-    ylim<-c(yrg[1]-15,yrg[2]+5)
-    newx<-seq(1920,2012,4)
-    plot(1,type="n",xlab="",ylab='',axes=F,xlim=c(1920,2016),ylim=ylim)
-    box()
-    axis(1,at=seq(1920,2016,8));mtext("Year",1,2.5,cex=1.5)
-    axis(2);mtext("Turnout %",2,2,cex=1.5)
-    abline(v=time[t0],col="gray",lwd=2)
-    abline(h=0,col="gray20",lty=2,lwd=1)
-    lines(time,out$Y.tr[,id]-out$xi-mean(out$Y.tr[,id]),col=1,lwd=2,lty=5)
-    polygon(c(rev(newx), newx), c(rev(out$est.ind[ ,3,id]), out$est.ind[ ,4,id]),
-            col = "#55555530", border = NA)
-    lines(time,out$est.ind[,1,id],col=1,lty=1,lwd=2)  
-    legend("bottomright",
-           legend=c("Treatment Effect (DID)","Treatment Effect (GSC)",
-                    "95% Confidence Interval (GSC)"),
-           cex=1.3, seg.len=2, col=c(1,1,"#55555550"),lty=c(5,1,1),lwd=c(2,2,15),
-           bty="n")  
-
+  id<-which(out$id.tr==abb)
+  t0<-T0[id]
+  
+  pdf(paste("fg_edr_case_",abb,".pdf",sep=""),width=14,height=5)
+  par(mfcol=c(1,2),mar=c(4,4,1,1),lend=1)
+  
+  ## counterfactual
+  yrg<-range(c(out$Y.tr[,id],out$Y.ct[,id]))
+  ylim=c(yrg[1]-10,yrg[2]+5)
+  plot(1,type="n",xlab="",ylab='',axes=F,xlim=c(1920,2016),ylim=ylim)
+  box()
+  axis(1,at=seq(1920,2016,8));mtext("Year",1,2.5,cex=1.5)
+  axis(2);mtext("Turnout %",2,2,cex=1.5)
+  abline(v=time[t0],col="gray",lwd=2)
+  lines(time,out$xi+mean(out$Y.tr[,id]),col="gray50",lwd=2,lty=5)
+  lines(time,out$Y.tr[,id],lwd=3)  
+  lines(time,out$Y.ct[,id],col="gray50",lty=1,lwd=2)
+  text(1925,yrg[2]+2,abb,cex=2)
+  legend("bottomright",
+         legend=c("Actual Outcome","Estimated Y(0) (DID)","Estimated Y(0) (GSC)"),
+         cex=1.3, seg.len=2, col=c(1,"gray50","gray50"),lty=c(1,5,1),
+         lwd=c(3,2,2),bty="n")  
+  
+  yrg<-range(c(out$est.ind[,,id],out$Y.tr[,id]-out$xi-mean(out$Y.tr[,id])))
+  ylim<-c(yrg[1]-15,yrg[2]+5)
+  newx<-seq(1920,2012,4)
+  plot(1,type="n",xlab="",ylab='',axes=F,xlim=c(1920,2016),ylim=ylim)
+  box()
+  axis(1,at=seq(1920,2016,8));mtext("Year",1,2.5,cex=1.5)
+  axis(2);mtext("Turnout %",2,2,cex=1.5)
+  abline(v=time[t0],col="gray",lwd=2)
+  abline(h=0,col="gray20",lty=2,lwd=1)
+  lines(time,out$Y.tr[,id]-out$xi-mean(out$Y.tr[,id]),col=1,lwd=2,lty=5)
+  polygon(c(rev(newx), newx), c(rev(out$est.ind[ ,3,id]), out$est.ind[ ,4,id]),
+          col = "#55555530", border = NA)
+  lines(time,out$est.ind[,1,id],col=1,lty=1,lwd=2)  
+  legend("bottomright",
+         legend=c("Treatment Effect (DID)","Treatment Effect (GSC)",
+                  "95% Confidence Interval (GSC)"),
+         cex=1.3, seg.len=2, col=c(1,1,"#55555550"),lty=c(5,1,1),lwd=c(2,2,15),
+         bty="n")  
+  
   graphics.off()   
 }
 
