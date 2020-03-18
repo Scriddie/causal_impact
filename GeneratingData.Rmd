@@ -1,0 +1,286 @@
+<<<<<<< HEAD
+---
+title: "Project_Plan"
+author: "Sofia Vazquez"
+date: "3/14/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(CausalImpact)
+library(bsts)
+```
+
+# Plan
+
+- Generate data
+- Change BSTSM values for the Gaussian to see how they impact the performance.
+- Create BSTSM with different state components. 
+
+# Genarating Time Series Data
+```{r}
+M_t = 67
+V_t = 5
+Y= NULL
+
+for (i in 1:1000){
+  Y[i] <- M_t +  rnorm(n= 1, mean = 0, sd = 5)
+  M_t  <- M_t + V_t + rnorm(n= 1, mean = 0, sd = 500)
+  V_t  <- V_t + rnorm(n= 1, mean = 0.08, sd = 1)
+}
+Y
+plot(Y, type = "l")
+data_lin_trend<- data_frame(cov = Y + rnorm(1000, 0, 0.01), Y)
+data_lin_trend$Y[800:1000] <- data_lin_trend$Y[800:1000]+20000
+
+plot(data_lin_trend$Y, type = "l")
+
+```
+```{r}
+data <- data_frame(y = Y) %>% mutate(x = 1:1000)
+ggplot(data, aes(x = x, y = y))+
+  geom_line()
+```
+# With seasonality
+
+```{r}
+# seasons <- 0:2
+# initial_noise <- rnorm(1,0,1)
+# gamma <- c(-3,2,1)
+# mu    <- c(10,5,0)
+# nita_perm <-c(rnorm(1,0,1), rnorm(1,0,2), rnorm(1,0,3)) 
+# y = NULL
+# 
+# for (i in 0:3000-1){
+#   current_season = round(i/3) #3 - i%%3
+#   
+#   y[i+1] <- mu[current_season] + rnorm(n= 1, mean = 0, sd = 1)
+#   
+#     nita[current_season] <- nita_perm[current_season] + rnorm(1,0,1)
+#     
+#   mu[current_season]  <- mu[current_season] +  nita[current_season]
+# 
+# }
+# plot(y, type = "l")
+# data_seasonal<- data_frame(cov = Y + rnorm(1000, 0, 0.01), Y)
+# data_seasonal$Y[800:1000] <- data_seasonal$Y[800:1000]+20
+```
+
+Correct seasonal:
+```{r}
+M_t = 67
+V_t = 5
+G_t = c(-10,15,-5, 50, -20, -30,0)
+Y= NULL
+gamma_t = G_t[7]
+for (i in 1:100){
+  current_season <- length(G_t)- i%%length(G_t)
+  
+  Y[i] <- M_t +  rnorm(n= 1, mean = 0, sd = 1) + gamma_t
+  M_t  <- M_t + V_t + rnorm(n= 1, mean = 0, sd = 1)
+  V_t  <- V_t + rnorm(n= 1, mean = 0.08, sd = 1)
+  gamma_t <- G_t[current_season] + rnorm(1,0,1)
+}
+Y
+plot(Y, type = "l")
+data_seasonal<- data_frame(cov = Y + rnorm(100, 0, 0.01), Y)
+data_seasonal$Y[80:100] <- data_seasonal$Y[80:100] + 200
+plot(data_seasonal$Y, type = "l")
+```
+# Running Causal impact on data with  trend
+```{r RunCausalImpact}
+pre.period <- as.Date(c("2019-01-01", "2021-03-11"))
+post.period <- as.Date(c("2021-03-12", "2021-09-27"))
+time.points <- seq.Date(as.Date("2019-01-01"), by = 1, length.out = 1000)
+data <- zoo(cbind(data_lin_trend$Y#,data_lin_trend$cov
+                  ), time.points)
+impact <- CausalImpact(data, pre.period, post.period)
+plot(impact)
+```
+# Running Causal impact on data with seasonality
+```{r RunCausalImpact}
+pre.period <- as.Date(c("2019-01-01", "2019-03-22"))
+post.period <- as.Date(c("2019-03-23", "2019-04-11"))
+time.points <- seq.Date(as.Date("2019-01-01"), by = 1, length.out = 100)
+data <- zoo(cbind(data_seasonal$Y,data_seasonal$cov
+                  ), time.points)
+impact <- CausalImpact(data, pre.period, post.period)
+plot(impact)
+```
+# Linear Model without regression and seasionality.
+Plot is drawn to predict values for 20 future time points.
+Created Pre-intervention period by slicing the data frame before the intervention(800)
+COMMENT - Without regression the prediction is not accurate. Confidence intervals are pretty wide
+```{r CreatingModels}
+data_pre_intervention_lin = data_lin_trend[1:799,]
+linear_only_state <- AddLocalLinearTrend(list(), data_pre_intervention_lin$Y)
+model_linear <- bsts(data_pre_intervention_lin$Y,
+               state.specification = linear_only_state,
+               niter = 1000) #### LINEAR MODEL WITHOUT REGRESSION AND SEASIONALITY
+pred_linear <- predict(model_linear, horizon = 200)
+plot(pred_linear, plot.original = 800)
+```
+# Linear model with seasionality and regression
+Plot is drawn to predict values for 20 future time points.
+Created Pre-intervention period by slicing the data frame before the intervention(80)
+COMMENT- Prediction when modelled properly seems to be close to true values, small confidence intervals
+```{r linsesrigModed}
+data_pre_seasonal = data_seasonal[1:79,]
+linear_only_state <- AddLocalLinearTrend(list(), data_pre_seasonal$Y)
+linear_seasonal_state <- AddSeasonal(linear_only_state, data_pre_seasonal$Y, nseasons = 7)
+model_lin_season_regr <- bsts(Y ~ .,
+               state.specification = linear_seasonal_state,
+               niter = 1000,
+               data = data_pre_seasonal) #### LINEAR MODEL WITH REGRESSION AND SEASIONALITY
+pred_linear_seasonal_regr <- predict(model_lin_season_regr, horizon = 20,newdata = data_seasonal$cov[80:100])
+plot(pred_linear_seasonal_regr, plot.original = 40)
+=======
+---
+title: "Project_Plan"
+author: "Sofia Vazquez"
+date: "3/14/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(CausalImpact)
+library(bsts)
+```
+
+# Plan
+
+- Generate data
+- Change BSTSM values for the Gaussian to see how they impact the performance.
+- Create BSTSM with different state components. 
+
+# Genarating Time Series Data
+```{r}
+M_t = 67
+V_t = 5
+Y= NULL
+
+for (i in 1:1000){
+  Y[i] <- M_t +  rnorm(n= 1, mean = 0, sd = 5)
+  M_t  <- M_t + V_t + rnorm(n= 1, mean = 0, sd = 500)
+  V_t  <- V_t + rnorm(n= 1, mean = 0.08, sd = 1)
+}
+Y
+plot(Y, type = "l")
+data_lin_trend<- data_frame(cov = Y + rnorm(1000, 0, 0.01), Y)
+data_lin_trend$Y[800:1000] <- data_lin_trend$Y[800:1000]+20000
+
+plot(data_lin_trend$Y, type = "l")
+
+```
+```{r}
+data <- data_frame(y = Y) %>% mutate(x = 1:1000)
+ggplot(data, aes(x = x, y = y))+
+  geom_line()
+```
+# With seasonality
+
+```{r}
+# seasons <- 0:2
+# initial_noise <- rnorm(1,0,1)
+# gamma <- c(-3,2,1)
+# mu    <- c(10,5,0)
+# nita_perm <-c(rnorm(1,0,1), rnorm(1,0,2), rnorm(1,0,3)) 
+# y = NULL
+# 
+# for (i in 0:3000-1){
+#   current_season = round(i/3) #3 - i%%3
+#   
+#   y[i+1] <- mu[current_season] + rnorm(n= 1, mean = 0, sd = 1)
+#   
+#     nita[current_season] <- nita_perm[current_season] + rnorm(1,0,1)
+#     
+#   mu[current_season]  <- mu[current_season] +  nita[current_season]
+# 
+# }
+# plot(y, type = "l")
+# data_seasonal<- data_frame(cov = Y + rnorm(1000, 0, 0.01), Y)
+# data_seasonal$Y[800:1000] <- data_seasonal$Y[800:1000]+20
+```
+
+Correct seasonal:
+```{r}
+M_t = 67
+V_t = 5
+G_t = c(-10,15,-5, 50, -20, -30,0)
+Y= NULL
+gamma_t = G_t[7]
+for (i in 1:100){
+  current_season <- length(G_t)- i%%length(G_t)
+  
+  Y[i] <- M_t +  rnorm(n= 1, mean = 0, sd = 1) + gamma_t
+  M_t  <- M_t + V_t + rnorm(n= 1, mean = 0, sd = 1)
+  V_t  <- V_t + rnorm(n= 1, mean = 0.08, sd = 1)
+  gamma_t <- G_t[current_season] + rnorm(1,0,1)
+}
+Y
+plot(Y, type = "l")
+data_seasonal<- data_frame(cov = Y + rnorm(100, 0, 0.01), Y)
+data_seasonal$Y[80:100] <- data_seasonal$Y[80:100] + 200
+plot(data_seasonal$Y, type = "l")
+```
+# Running Causal impact on data with  trend
+```{r RunCausalImpact}
+pre.period <- as.Date(c("2019-01-01", "2021-03-11"))
+post.period <- as.Date(c("2021-03-12", "2021-09-27"))
+time.points <- seq.Date(as.Date("2019-01-01"), by = 1, length.out = 1000)
+data <- zoo(cbind(data_lin_trend$Y#,data_lin_trend$cov
+                  ), time.points)
+impact <- CausalImpact(data, pre.period, post.period)
+plot(impact)
+```
+# Running Causal impact on data with seasonality
+```{r RunCausalImpact}
+pre.period <- as.Date(c("2019-01-01", "2019-03-22"))
+post.period <- as.Date(c("2019-03-23", "2019-04-11"))
+time.points <- seq.Date(as.Date("2019-01-01"), by = 1, length.out = 100)
+data <- zoo(cbind(data_seasonal$Y,data_seasonal$cov
+                  ), time.points)
+impact <- CausalImpact(data, pre.period, post.period)
+plot(impact)
+```
+# Linear Model without regression and seasionality.
+Plot is drawn to predict values for 20 future time points.
+Created Pre-intervention period by slicing the data frame before the intervention(800)
+COMMENT - Without regression the prediction is not accurate. Confidence intervals are pretty wide
+```{r CreatingModels}
+data_pre_intervention_lin = data_lin_trend[1:799,]
+linear_only_state <- AddLocalLinearTrend(list(), data_pre_intervention_lin$Y)
+model_linear <- bsts(data_pre_intervention_lin$Y,
+               state.specification = linear_only_state,
+               niter = 1000) #### LINEAR MODEL WITHOUT REGRESSION AND SEASIONALITY
+pred_linear <- predict(model_linear, horizon = 200)
+plot(pred_linear, plot.original = 800)
+```
+# Linear model with seasionality and regression
+Plot is drawn to predict values for 20 future time points.
+Created Pre-intervention period by slicing the data frame before the intervention(80)
+COMMENT- Prediction when modelled properly seems to be close to true values, small confidence intervals
+```{r linsesrigModed}
+data_pre_seasonal = data_seasonal[1:79,]
+linear_only_state <- AddLocalLinearTrend(list(), data_pre_seasonal$Y)
+linear_seasonal_state <- AddSeasonal(linear_only_state, data_pre_seasonal$Y, nseasons = 7)
+model_lin_season_regr <- bsts(Y ~ .,
+               state.specification = linear_seasonal_state,
+               niter = 1000,
+               data = data_pre_seasonal) #### LINEAR MODEL WITH REGRESSION AND SEASIONALITY
+pred_linear_seasonal_regr <- predict(model_lin_season_regr, horizon = 20,newdata = data_seasonal$cov[80:100])
+plot(pred_linear_seasonal_regr, plot.original = 40)
+>>>>>>> fad316990636f98f9596b665cfe50f1536414aa9
+```
