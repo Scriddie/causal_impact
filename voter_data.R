@@ -1,13 +1,16 @@
+rm(list=ls(all=TRUE))
+
 library(tidyverse)
 library(CausalImpact)
 library(foreign)
 library(ggplot2)
-
-
 library(gsynth)
 data(gsynth)  # loads simdata and tournout
 
+
 df_turnout = turnout
+CUTOFF_YEAR = 1996
+PLOT_ALL = FALSE
 
 # lil plotling function
 plt_ts = function(df){
@@ -33,28 +36,15 @@ get_treatment_start = function(df){
 
 get_treatment_start(df_turnout)
 
-# ## ID, NH, WY; 1996
-# df_medium = df_turnout %>% 
-#   filter(abb %in% c("ID", "NH", "WY"))
-# plt_ts(df_medium)
-# 
-# ## MT, IA, CT; 2008
-# df_late = df_turnout %>% 
-#   filter(abb %in% c("MT", "IA", "CT"))
-# plt_ts(df_late)
-
-### For now analysis only for the original states: ME, MN, WI; 1976
-df_early = df_turnout %>% 
+### For now analysis only for the early states: ME, MN, WI; 1976
+### TODO: We drop other states that have an intervention later. Is this necessary or should we cut df?
+df_repl_1 = df_turnout %>% 
   mutate(interv = ifelse(abb %in% c("ME", "MN", "WI"), 1, 0)) %>% 
+  # filter(!(abb %in% c("ID", "NH", "WY", "MT", "IA", "CT"))) %>% 
+  filter(year<CUTOFF_YEAR) %>%  # This way we can be sure we see no other states with interventions
   dplyr::select(year, turnout, interv)
-df_early %>% head
-plt_ts(df_early)
 
-# TODO: do some sanity checks to see why the guys data looks different??
-df_sanity = df_early
-df_sanity_agg = aggregate(df_sanity$turnout, by=list(df_sanity$year), FUN=mean) %>% 
-  transmute(year=Group.1, turnout=x, interv=3)
-plt_ts(df_sanity_agg)
+if (PLOT_ALL) plt_ts(df_repl_1)
 
 
 # aggregate data frame by year (to be done for treatment and control)
@@ -68,17 +58,15 @@ agg_df = function(df, col_name){
 }
 
 # create separate data frames for control and intervention
-df_interv = df_early %>% 
+df_interv = df_repl_1 %>% 
   filter(interv==1) %>% 
   dplyr::select(year, turnout)
-df_control = df_early %>% 
+df_control = df_repl_1 %>% 
   filter(interv==0) %>% 
   dplyr::select(year, turnout)
 
 agg_interv = agg_df(df_interv, "turnout_interv")
-head(agg_interv)
 agg_control = agg_df(df_control, "turnout_control")
-head(agg_control)
 
 # bing into format expected by CausalImpact
 x = seq_along(as.numeric(agg_interv$year))
@@ -89,47 +77,9 @@ head(data)
 
 # beginning of intervention for early df
 pre.period = c(1, 14)  # agg_interv$year[15] is 1976
-post.period = c(15, 17)
+post.period = c(15, 19)
 impact = CausalImpact(data, pre.period, post.period)
 plot(impact)
-
-
-# TODO: run the guy's analysis on the same subset as ours!!!
-# (reason being, we need to match times bc of bsts, we can't just throw all the pre-treatment stuff 
-# together)
-### This is what the guy does, this is what we want to reproduce
-
-## GSC ##
-pdf("figures/fg_edr_main_syn.pdf",width=14,height=5)
-## counterfactual
-par(mfcol=c(1,2),mar=c(4,4,1,1),lend=1)
-out<-out.syn1
-time<-c(-13:4)
-plot(1,type="n",xlab="",ylab='',axes=F,xlim=range(time),ylim=c(55,75))
-box()
-axis(1,at=seq(-12,4,2));mtext("Term Relative to Reform",1,2.5,cex=1.5)
-axis(2);mtext("Turnout %",2,2.5,cex=1.5)
-abline(v=0,col="gray",lwd=2,lty=2)
-lines(time,out$Y.tr.cnt[1:18],lwd=2)
-lines(time,out$Y.ct.cnt[1:18],col=1,lty=5,lwd=2)
-legend("topleft",legend=c("Treated Average","Estimated Y(0) Average for the Treated"),cex=1.5,
-       seg.len=2, col=c(1,1),lty=c(1,5),lwd=2,bty="n") 
-## gap
-newx<-c(-13:4)
-plot(1,type="n",xlab="",ylab='',axes=F,xlim=c(-13,4),ylim=c(-8,8))
-box()
-axis(1,at=seq(-12,4,2));mtext("Term relative to reform",1,2.5,cex=1.5)
-axis(2,at=seq(-8,8,4));mtext("Turnout %",2,2.5,cex=1.5)
-abline(v=0,col="gray",lty=2,lwd=2)
-abline(h=0,col="gray20",lty=2,lwd=1)
-polygon(c(rev(newx), newx), c(rev(out$est.att[1:18,3]), out$est.att[1:18, 4]),
-        col = "#55555530", border = NA)
-lines(newx,out$est.att[1:18,1],col=1,lty=1,lwd=2)
-legend("topleft",legend=c("Estimated ATT","95% Confidence Intervals"), cex=1.5, seg.len=2,
-       col=c(1,"#55555530"),lty=c(1,5),lwd=c(2,20),bty="n")
-graphics.off()
-
-
 
 
 
@@ -140,277 +90,77 @@ graphics.off()
 
 ## Author: Yiqing Xu
 
-## The codes below replicate Tables 2 and 3, Figures 2 and 3 in the
-## paper, as well as Figures A5 and A6 in the Online Appendix
-
-rm(list=ls(all=TRUE)) ## eliminating everything in the memory; be cautious
-
-library(gsynth)
-data(gsynth)
 
 
-##########################
-## Table 2
-##########################
+df_repl_2 = df_turnout %>% 
+  mutate(interv = ifelse(abb %in% c("ME", "MN", "WI", "ID", "NH", "WY", "MT", "IA", "CT"), 1, 0)) %>% 
+  filter(year<CUTOFF_YEAR) %>% 
+  dplyr::select(-policy_mail_in, -policy_motor, -interv)
 
-## interFE is a function in the gsynth package that implements
-## interactive fixed effects models, of which DID is a special case
-## (when r = 0).
+df_turnout %>%
+  filter(abb=="CT")
 
-## Column 1 (DID)
-out.did1<-interFE(turnout ~ policy_edr,
-                  data = turnout, index = c("abb", "year"),
-                  r = 0, force="two-way", se = TRUE, nboots = 2000,
-                  seed = 2139)
+if(PLOT_ALL){
+  ggplot(df_repl_2, aes(x=year, y=turnout)) +
+    stat_summary(fun.y="mean", geom="line") +
+    scale_x_continuous(limits=c(1920, 1984))
+}
 
-## Column 2 (DID)
-out.did2<-interFE(turnout ~ policy_edr + policy_mail_in + policy_motor,
-                  data = turnout, index = c("abb", "year"),
-                  r = 0, force="two-way", se = TRUE, nboots = 2000,
-                  seed = 2139)
 
-## Column 3 (GSC)
-out.syn1<-gsynth(turnout ~ policy_edr,
-                 data = turnout, index =c("abb", "year"),
+# Warning, gsynth calculates only half the values if all the treatment starts at the same time!
+# this will require some manual calculations when plotting
+
+out = gsynth(turnout ~ policy_edr,
+                 data = df_repl_2, index =c("abb", "year"),
                  force = "two-way", CV = TRUE, r=c(0,5), se = TRUE,
                  parallel = FALSE, nboots=2000, seed = 2139)
 
-## Column 4 (GSC)
-out.syn2<-gsynth(turnout ~ policy_edr + policy_mail_in + policy_motor,
-                 data = turnout, index =c("abb", "year"),
-                 force = "two-way", CV = TRUE, r=c(0,5), se = TRUE,
-                 parallel = FALSE, nboots=2000, seed = 2139)
-
+# If this is not the case, our treatments start at different times which is no good for CausalImpact
+stopifnot(is.null(out$eff.cnt))
 
 ## first look (not in the paper)
-plot(out.syn2, type = "gap", xlim = c(-13,4))
-plot(out.syn2, type = "raw")
-plot(out.syn2, type = "counterfactual")
-plot(out.syn2, type = "factors")
-plot(out.syn2, type = "loadings")
-
-
-## DID (dynamic effect)
-out.did3<-gsynth(turnout ~ policy_edr + policy_mail_in + policy_motor,
-                 data = turnout, index =c("abb", "year"),
-                 force = "two-way", CV = FALSE, r = 0, se = TRUE,
-                 parallel = FALSE, nboots=2000,
-                 inference = "nonparametric", seed = 2139)
-plot(out.did3, type = "gap", xlim = c(-13,4))
-plot(out.did3, type = "counterfactual")
-
-##########################
-## Table 3
-##########################
-
-## ME, MN, WI
-sub1 <- gsynth(turnout ~ policy_edr + policy_mail_in + policy_motor,
-               data = turnout[which(!turnout$abb%in%c("ID","NH","WY","MT","IA","CT")),],
-               index =c("abb", "year"), force = "two-way", CV = FALSE,
-               r = 2, se = TRUE, parallel = FALSE, nboots=2000, seed = 2139)
-
-## ID, NH, WY
-sub2 <- gsynth(turnout ~ policy_edr + policy_mail_in + policy_motor,
-               data = turnout[which(!turnout$abb%in%c("ME","MN","WI","MT","IA","CT")),],
-               index =c("abb", "year"), force = "two-way", CV = FALSE,
-               r = 2, se = TRUE, parallel = FALSE, nboots=2000, seed = 2139)
-
-## MT, IA, CT
-sub3 <- gsynth(turnout ~ policy_edr + policy_mail_in + policy_motor,
-               data = turnout[which(!turnout$abb%in%c("ME","MN","WI","ID","NH","WY")),],
-               index =c("abb", "year"), force = "two-way", CV = FALSE,
-               r=2, se = TRUE, parallel = FALSE, nboots=2000, seed = 2139)
-
-##############################
-## Figiure 2
-##############################
-
-## DID ##
-pdf("figures/fg_edr_main_did.pdf",width=14,height=5)
-## counterfactual
-par(mfcol=c(1,2),mar=c(4,4,1,1),lend=1)
-out<-out.did3
-time<-c(-13:4)
-plot(1,type="n",xlab="",ylab='',axes=F,xlim=range(time),ylim=c(55,75))
-box()
-axis(1,at=seq(-12,4,2));mtext("Term Relative to Reform",1,2.5,cex=1.5)
-axis(2);mtext("Turnout %",2,2.5,cex=1.5)
-abline(v=0,col="gray",lwd=2,lty=2)
-lines(time,out$Y.tr.cnt[1:18],lwd=2)
-lines(time,out$Y.ct.cnt[1:18],col=1,lty=5,lwd=2)
-legend("topleft",legend=c("Treated Average","Estimated Y(0) Average for the Treated"),cex=1.5,
-       seg.len=2, col=c(1,1),lty=c(1,5),lwd=2,bty="n")
-## gap
-newx<-c(-13:4)
-plot(1,type="n",xlab="",ylab='',axes=F,xlim=c(-13,4),ylim=c(-8,8))
-box()
-axis(1,at=seq(-12,4,2));mtext("Term relative to reform",1,2.5,cex=1.5)
-axis(2,at=seq(-8,8,4));mtext("Turnout %",2,2.5,cex=1.5)
-abline(v=0,col="gray",lty=2,lwd=2)
-abline(h=0,col="gray20",lty=2,lwd=1)
-polygon(c(rev(newx), newx), c(rev(out$est.att[1:18,3]), out$est.att[1:18, 4]),
-        col = "#55555530", border = NA)
-lines(newx,out$est.att[1:18,1],col=1,lty=1,lwd=2)
-legend("topleft",legend=c("Estimated ATT","95% Confidence Intervals"), cex=1.5, seg.len=2,
-       col=c(1,"#55555530"),lty=c(1,5),lwd=c(2,20),bty="n")
-graphics.off()
-
+# plot(out.syn2, type = "raw")
+# plot(out.syn2, type = "counterfactual")
 
 ## GSC ##
-pdf("figures/fg_edr_main_syn.pdf",width=14,height=5)
+# pdf("figures/fg_edr_main_syn.pdf",width=14,height=5)
 ## counterfactual
 par(mfcol=c(1,2),mar=c(4,4,1,1),lend=1)
-out<-out.syn1
-time<-c(-13:4)
-plot(1,type="n",xlab="",ylab='',axes=F,xlim=range(time),ylim=c(55,75))
+time<-c(1:19)
+plot(1,type="n",xlab="",ylab='',axes=F,xlim=range(time),ylim=c(45,80))
 box()
-axis(1,at=seq(-12,4,2));mtext("Term Relative to Reform",1,2.5,cex=1.5)
+axis(1,at=seq(1,19,2));mtext("Term Relative to Reform",1,2.5,cex=1.5)
 axis(2);mtext("Turnout %",2,2.5,cex=1.5)
 abline(v=0,col="gray",lwd=2,lty=2)
-lines(time,out$Y.tr.cnt[1:18],lwd=2)
-lines(time,out$Y.ct.cnt[1:18],col=1,lty=5,lwd=2)
+mean(df_repl_2[df_repl_2$year==1940, "turnout"])
+### This only works if the treatments dont start at the same time bc user friendliness doesnt matter
+# lines(time, out$Y.tr.cnt[1:18], lwd=2)
+# lines(time, out$Y.ct.cnt[1:18], col=1, lty=5, lwd=2)
+### Now we have to calculate everything by hand, it's a pain, believe me
+real_line = rowMeans(out$Y.tr) %>% setNames(time)
+est_line = rowMeans(out$Y.ct) %>% setNames(time)
+lines(time, real_line[1:19], lwd=2)
+lines(time, est_line[1:19], col=1, lty=5, lwd=2)
+### finally done with this nonsense
 legend("topleft",legend=c("Treated Average","Estimated Y(0) Average for the Treated"),cex=1.5,
        seg.len=2, col=c(1,1),lty=c(1,5),lwd=2,bty="n") 
 ## gap
-newx<-c(-13:4)
-plot(1,type="n",xlab="",ylab='',axes=F,xlim=c(-13,4),ylim=c(-8,8))
+newx<-c(1:19)
+plot(1,type="n",xlab="",ylab='',axes=F,xlim=c(1,19),ylim=c(-5,10))
 box()
-axis(1,at=seq(-12,4,2));mtext("Term relative to reform",1,2.5,cex=1.5)
-axis(2,at=seq(-8,8,4));mtext("Turnout %",2,2.5,cex=1.5)
-abline(v=0,col="gray",lty=2,lwd=2)
+axis(1,at=seq(1,19,2));mtext("Term relative to reform",1,2.5,cex=1.5)
+axis(2,at=seq(-10,10,2));mtext("Turnout %",2,2.5,cex=1.5)
+abline(v=14,col="gray",lty=2,lwd=2)
 abline(h=0,col="gray20",lty=2,lwd=1)
-polygon(c(rev(newx), newx), c(rev(out$est.att[1:18,3]), out$est.att[1:18, 4]),
+polygon(c(rev(newx), newx), c(rev(out$est.att[1:19,3]), out$est.att[1:19,4]),
         col = "#55555530", border = NA)
-lines(newx,out$est.att[1:18,1],col=1,lty=1,lwd=2)
+lines(newx,out$est.att[1:19,1],col=1,lty=1,lwd=2)
 legend("topleft",legend=c("Estimated ATT","95% Confidence Intervals"), cex=1.5, seg.len=2,
        col=c(1,"#55555530"),lty=c(1,5),lwd=c(2,20),bty="n")
-graphics.off()
+# graphics.off()
 
-##################################
-## Figiure 3: Factors and Loadings
-##################################
 
-## factors
-
-pdf("figures/fg_edr_factors.pdf")
-out<-out.syn2
-L.co<-out$lambda.co
-norm<-sqrt(diag(t(L.co)%*%L.co)/(out$N-out$Ntr))
-time<-out$time
-par(mar=c(3,3,1,1))
-plot(time,out$Yb[,2],type="n",ylim=c(-15,15),xlim=c(1920,2016),axes=0,ylab="",xlab="")
-box()
-axis(1,at=seq(1920,2016,8));mtext("Year",1,2,cex=1.2)
-axis(2);mtext("Turnout %",2,2,cex=1.2)
-abline(h=0,col=1,lty=2)
-lines(time,out$factor[,1]*norm[1],col=1,lwd=2)
-lines(time,out$factor[,2]*norm[2],col=1,lty=5,lwd=2)
-legend("topleft",legend=c("Factor 1","Factor 2"), cex=1.5, seg.len=2,
-       col=c(1,1),lty=c(1,5),lwd=2,bty="n")
-graphics.off()
-
-## loadings
-
-pdf("figures/fg_edr_loadings2.pdf")
-out<-out.syn2
-par(mar=c(3,3,1,1),lend=1)
-plot(1,main="",type="n",xlab="",ylab="",axes=FALSE,xlim=c(-20,20),ylim=c(-5,6))
-text(out$lambda.co[,1],out$lambda.co[,2], labels=out$id.co, cex= 1.3,col="gray50")
-text(out$lambda.tr[,1],out$lambda.tr[,2], labels=out$id.tr, cex= 1.3,col=1, font=2)
-box()
-axis(1);mtext("Loadings for factor 1",1,2,cex=1.2)
-axis(2);mtext("Loadings for factor 2",2,2,cex=1.2)
-# mark south
-south<-order(out$lambda.co[,1],decreasing=1)[1:11]
-x0<-out$lambda.co[south,1]
-y0<-out$lambda.co[south,2]-0.2
-segments(x0-0.95,y0,x0+0.95,y0,col="gray50",lwd=1.5)
-text(-17.3,5.9, "Treated", cex= 1.5,col=1, font=2)
-text(-12.5,5.3, "Control (non-South)", cex= 1.5,col="gray50")
-text(-14.5,4.7, "Control (South)", cex= 1.5,col="gray50")
-segments(-20.5,4.4,-8.5,4.4,col="gray50",lwd=1.5)
-graphics.off()
-
-##############################
-## Figiure A5: Raw Data
-##############################
-
-pdf("figures/fg_edr_raw.pdf",width=10)
-out<-out.syn2
-time<-out$time
-Y<-out$Y.dat
-Y.tr<-out$Y.dat[,which(out$tr==1)]
-tr<-out$tr
-par(mar=c(3,3,1,1))
-plot(1,type="n",ylim=c(0,100),xlim=c(1920,2016),axes=F,main="",ylab="",xlab="")
-box()
-axis(1,at=seq(1920,2016,8));mtext("Year",1,2,cex=1.2)
-axis(2);mtext("Turnout %",2,2,cex=1.2)
-for (j in which(tr==0)) lines(time,Y[,j],col="#99999980",lwd=1.3)
-for (j in 1:out$Ntr) lines(time[1:(max(which(out$pre[,j]==1))+1)],
-                           Y.tr[1:(max(which(out$pre[,j]==1))+1),j],col= 1,lty=1,lwd=1.3)
-for (j in 1:out$Ntr) lines(time[which(out$pre[,j]==0)],
-                           Y.tr[which(out$pre[,j]==0),j],col=1,lty=5,lwd=1.5)
-legend("bottomright",legend=c("Controls","Treated (pre)","Treated (post)"),
-       cex=1.5, seg.len=2, col=c("#99999980",1,1), 
-       fill=NA,border=NA, lty=c(1,1,5),lwd=c(1.5,1.5,1.5), merge=T,bty="n")
-graphics.off()
-
-##############################
-## Figiure A6: Each State
-##############################
-
-out<-out.syn2
-names(out)
-time<-out$time
-T0<-out$T0
-T<-out$T
-states<-out$id.tr
-
-for (abb in states) { # treated states
-  
-  id<-which(out$id.tr==abb)
-  t0<-T0[id]
-  
-  pdf(paste("fg_edr_case_",abb,".pdf",sep=""),width=14,height=5)
-  par(mfcol=c(1,2),mar=c(4,4,1,1),lend=1)
-  
-  ## counterfactual
-  yrg<-range(c(out$Y.tr[,id],out$Y.ct[,id]))
-  ylim=c(yrg[1]-10,yrg[2]+5)
-  plot(1,type="n",xlab="",ylab='',axes=F,xlim=c(1920,2016),ylim=ylim)
-  box()
-  axis(1,at=seq(1920,2016,8));mtext("Year",1,2.5,cex=1.5)
-  axis(2);mtext("Turnout %",2,2,cex=1.5)
-  abline(v=time[t0],col="gray",lwd=2)
-  lines(time,out$xi+mean(out$Y.tr[,id]),col="gray50",lwd=2,lty=5)
-  lines(time,out$Y.tr[,id],lwd=3)  
-  lines(time,out$Y.ct[,id],col="gray50",lty=1,lwd=2)
-  text(1925,yrg[2]+2,abb,cex=2)
-  legend("bottomright",
-         legend=c("Actual Outcome","Estimated Y(0) (DID)","Estimated Y(0) (GSC)"),
-         cex=1.3, seg.len=2, col=c(1,"gray50","gray50"),lty=c(1,5,1),
-         lwd=c(3,2,2),bty="n")  
-  
-  yrg<-range(c(out$est.ind[,,id],out$Y.tr[,id]-out$xi-mean(out$Y.tr[,id])))
-  ylim<-c(yrg[1]-15,yrg[2]+5)
-  newx<-seq(1920,2012,4)
-  plot(1,type="n",xlab="",ylab='',axes=F,xlim=c(1920,2016),ylim=ylim)
-  box()
-  axis(1,at=seq(1920,2016,8));mtext("Year",1,2.5,cex=1.5)
-  axis(2);mtext("Turnout %",2,2,cex=1.5)
-  abline(v=time[t0],col="gray",lwd=2)
-  abline(h=0,col="gray20",lty=2,lwd=1)
-  lines(time,out$Y.tr[,id]-out$xi-mean(out$Y.tr[,id]),col=1,lwd=2,lty=5)
-  polygon(c(rev(newx), newx), c(rev(out$est.ind[ ,3,id]), out$est.ind[ ,4,id]),
-          col = "#55555530", border = NA)
-  lines(time,out$est.ind[,1,id],col=1,lty=1,lwd=2)  
-  legend("bottomright",
-         legend=c("Treatment Effect (DID)","Treatment Effect (GSC)",
-                  "95% Confidence Interval (GSC)"),
-         cex=1.3, seg.len=2, col=c(1,1,"#55555550"),lty=c(5,1,1),lwd=c(2,2,15),
-         bty="n")  
-  
-  graphics.off()   
-}
+### Other interesting stuff:
+# unobserved factors
+out$r.cv
 
