@@ -1,14 +1,15 @@
-## Synthetic Data
+# Synthetic Data
 
 GeneratingData.Rmd
+
 SyntheticData.Rmd
 
-## Real World Data
+# Real World Data
 
-# Tanzania RCT
+## Tanzania RCT
 rct_data.R
 
-# Comparison to IFE on US voter data
+## Comparison to IFE on US voter data
 voter_data.R
 
 ![Synthetic control BSTS](/figures/CI_voter_data.png)
