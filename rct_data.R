@@ -14,7 +14,6 @@ df_raw= data.frame(read.dta(pth))
 # check data
 pth = paste("data/Tanzania/data/existing pts/", "3ie_exist_vis.dta", sep="")
 df_raw = data.frame(read.dta(pth))
-write.csv(df, "existing_patients.csv")
 
 df = df_raw %>% 
   dplyr::select(c(interv, c_visitdate, miss)) %>% 
