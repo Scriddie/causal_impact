@@ -11,6 +11,7 @@ data(gsynth)  # loads simdata and tournout
 df_turnout = turnout
 CUTOFF_YEAR = 1996
 PLOT_ALL = FALSE
+SAVE_DATA = FALSE
 
 # lil plotling function
 plt_ts = function(df){
@@ -80,7 +81,11 @@ pre.period = c(1, 14)  # agg_interv$year[15] is 1976
 post.period = c(15, 19)
 impact = CausalImpact(data, pre.period, post.period)
 plot(impact)
-ggsave("figures/CI_voter_data.pdf", plot(impact), device="pdf", width=14, height=4)
+if (SAVE_DATA){
+  ggsave("figures/CI_voter_data.png", plot(impact), device="png", width=7, height=4)
+}
+
+summary(impact, "report")
 
 ### ----------------------------------------------------------------------
 
@@ -122,7 +127,9 @@ stopifnot(is.null(out$eff.cnt))
 # plot(out.syn2, type = "counterfactual")
 
 ## GSC ##
-pdf("figures/fg_edr_main_syn.pdf",width=14,height=5)
+if (SAVE_DATA){
+  png("figures/fg_edr_main_syn.png",width=14,height=5,units="in", res=350)
+}
 ## counterfactual
 par(mfcol=c(1,2),mar=c(4,4,1,1),lend=1)
 time<-c(1:19)
@@ -130,7 +137,7 @@ plot(1,type="n",xlab="",ylab='',axes=F,xlim=range(time),ylim=c(45,80))
 box()
 axis(1,at=seq(1,19,2));mtext("Term Relative to Reform",1,2.5,cex=1.5)
 axis(2);mtext("Turnout %",2,2.5,cex=1.5)
-abline(v=0,col="gray",lwd=2,lty=2)
+abline(v=14,col="gray",lwd=2,lty=2)
 mean(df_repl_2[df_repl_2$year==1940, "turnout"])
 ### This only works if the treatments dont start at the same time bc user friendliness doesnt matter
 # lines(time, out$Y.tr.cnt[1:18], lwd=2)
@@ -156,7 +163,9 @@ polygon(c(rev(newx), newx), c(rev(out$est.att[1:19,3]), out$est.att[1:19,4]),
 lines(newx,out$est.att[1:19,1],col=1,lty=1,lwd=2)
 legend("topleft",legend=c("Estimated ATT","95% Confidence Intervals"), cex=1.5, seg.len=2,
        col=c(1,"#55555530"),lty=c(1,5),lwd=c(2,20),bty="n")
-# graphics.off()
+if (SAVE_DATA){
+  graphics.off()
+}
 
 
 ### Other interesting stuff:
