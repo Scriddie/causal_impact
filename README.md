@@ -1,8 +1,6 @@
 # Synthetic Data
 
-GeneratingData.Rmd
-
-SyntheticData.Rmd
+Theoritical_Simulation_pdf.pdf
 
 # Real World Data
 
