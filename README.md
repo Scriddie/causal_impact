@@ -1,6 +1,9 @@
+# Causal Impact
+An analysis of https://github.com/google/CausalImpact for causal impact evaluation unsing synthetic and real-world RCT data
+
 ## Synthetic Data
 
-Theoritical_Simulation_pdf.pdf
+Theoritical_Simulation.pdf
 
 ## Real World Data
 
